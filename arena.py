@@ -154,6 +154,7 @@ def main(argv=None):
     parser.add_argument("--render", action="store_true", help="print the board after each turn")
     parser.add_argument("--delay", type=nonnegative_float, default=0.0, help="display delay in seconds")
     parser.add_argument("--log", type=Path, help="save the full JSON replay")
+    parser.add_argument("--open", action="store_true", help="open the web replay viewer after match completion")
     args = parser.parse_args(argv)
     try:
         players = [resolve_player(value, args.submissions_dir)
@@ -181,6 +182,9 @@ def main(argv=None):
                            on_turn=show if args.render else None)
         if args.log:
             save_json(args.log, result)
+        elif args.open:
+            args.log = ROOT / "logs" / f"{names[0]}_vs_{names[1]}.json"
+            save_json(args.log, result)
     except KeyboardInterrupt:
         print("\nMatch interrupted; student processes stopped.", file=sys.stderr)
         return 130
@@ -195,6 +199,15 @@ def main(argv=None):
         print("P{} {}: {}".format(i, names[i], json.dumps(stats)))
     if args.log:
         print("Replay: {}".format(args.log))
+    if args.open and args.log:
+        try:
+            import urllib.parse
+            import webbrowser
+            url = f"http://127.0.0.1:8420/?file={urllib.parse.quote(args.log.name)}"
+            print(f"Opening replay in browser: {url}")
+            webbrowser.open(url)
+        except Exception:
+            pass
     return 0
 
 

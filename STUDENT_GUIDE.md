@@ -16,6 +16,12 @@ Mùa giải của lớp do giảng viên tổ chức. Sinh viên dùng Arena tro
 
 Để thử bài của mình, sao chép `submissions/TEMPLATE.py` thành `submissions/MSSV.py` (ví dụ, `submissions/26127000.py`) rồi chỉnh sửa hàm `choose_action`. Trong lệnh chạy trận đấu, dùng `--player1 submissions/MSSV.py` để đấu với bot mẫu; đổi sang `--player2 submissions/MSSV.py` để thử bên xuất phát còn lại.
 
+Để xem lại trận đấu với giao diện đồ họa web hiện đại (phong cách wrongway.app):
+```bash
+python replay.py logs/demo.json --web
+```
+Xem hướng dẫn chi tiết tại [VIEWER_GUIDE.md](VIEWER_GUIDE.md).
+
 ## 2. Bàn cờ và luật chơi
 
 Bàn cờ có 9 hàng và 9 cột. Một ô có tọa độ `[row, col]`:

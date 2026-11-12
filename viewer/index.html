@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wrongway - Replay Viewer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="ww-header">
+    <div class="ww-header-left">
+      <div class="ww-logo">
+        <span>Wrongway</span>
+        <span class="ww-logo-badge">Replay</span>
+      </div>
+    </div>
+
+    <div class="ww-header-center">
+      <div id="ww-match-title" class="ww-match-title">
+        <span class="ww-text-muted">No Match Loaded</span>
+      </div>
+      <div id="ww-turn-counter" class="ww-badge ww-badge-seed">Turn 0 / 0</div>
+      <div id="ww-play-status-badge" class="ww-badge ww-badge-paused">PAUSED</div>
+      <div id="ww-seed-badge" class="ww-badge ww-badge-seed" style="display:none;"></div>
+    </div>
+
+    <div class="ww-header-right">
+      <button class="ww-btn ww-btn-primary" id="ww-btn-logs" title="Choose a log from logs/ folder">
+        📂 Open Log
+      </button>
+
+      <div class="ww-dropdown-wrap">
+        <button class="ww-btn ww-btn-icon" id="ww-btn-view-menu" title="View Options">
+          👁
+        </button>
+        <div class="ww-dropdown-menu" id="ww-view-dropdown">
+          <label class="ww-dropdown-item">
+            <span>Coordinates</span>
+            <input type="checkbox" id="ww-opt-coords" checked>
+          </label>
+          <div class="ww-dropdown-item">
+            <span>Shortest Path</span>
+            <select id="ww-opt-path" class="ww-select">
+              <option value="both" selected>Both</option>
+              <option value="p0">Player 0</option>
+              <option value="p1">Player 1</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+          <div class="ww-dropdown-item">
+            <span>Distance Heatmap</span>
+            <select id="ww-opt-heatmap" class="ww-select">
+              <option value="none" selected>None</option>
+              <option value="p0">Player 0</option>
+              <option value="p1">Player 1</option>
+            </select>
+          </div>
+          <label class="ww-dropdown-item">
+            <span>Color Walls by Player</span>
+            <input type="checkbox" id="ww-opt-wall-color" checked>
+          </label>
+          <label class="ww-dropdown-item">
+            <span>Flip Board</span>
+            <input type="checkbox" id="ww-opt-flip">
+          </label>
+        </div>
+      </div>
+
+      <button class="ww-btn ww-btn-icon" id="ww-btn-theme" title="Toggle Dark/Light Theme (T)">
+        🌓
+      </button>
+      <button class="ww-btn ww-btn-icon" id="ww-btn-help" title="Keyboard Shortcuts (?)">
+        ?
+      </button>
+    </div>
+  </header>
+
+  <!-- Series Bar (visible when multi-match series is loaded) -->
+  <div id="ww-series-bar" class="ww-series-bar" style="display:none;">
+    <button class="ww-btn ww-btn-sm" id="ww-btn-prev-match" title="Previous Match (W)">◀ Prev Match</button>
+    <span class="ww-series-label">Match 1 of 1</span>
+    <button class="ww-btn ww-btn-sm" id="ww-btn-next-match" title="Next Match (S)">Next Match ▶</button>
+  </div>
+
+  <!-- Main Container -->
+  <main class="ww-main">
+
+    <!-- Empty State -->
+    <div id="ww-empty-state" class="ww-empty-state">
+      <div class="ww-empty-icon">🎮</div>
+      <h2>Wrongway Replay Viewer</h2>
+      <p>Select a match log from the <code>logs/</code> directory:</p>
+      <div id="ww-empty-logs-list" class="ww-empty-logs-list"></div>
+      <div class="ww-empty-hint">
+        Generate more logs via: <code>python arena.py -p1 greedy -p2 wall_builder --log logs/demo.json</code>
+      </div>
+    </div>
+
+    <!-- Main Active View -->
+    <div id="ww-main-view" class="ww-main-view" style="display:none;">
+
+      <!-- Left Column: Board & Cards -->
+      <div class="ww-board-column">
+
+        <!-- Player 1 Card (Top, Blue) -->
+        <div id="ww-player-card-1" class="ww-player-card ww-card-p1">
+          <div class="ww-player-card-left">
+            <div class="ww-player-header">
+              <div class="ww-player-avatar ww-avatar-p1">1</div>
+              <span class="ww-player-name">Player 1</span>
+              <span class="ww-starter-badge" style="display:none;">First</span>
+            </div>
+            <div class="ww-walls-row">
+              <div class="ww-wall-pills"></div>
+              <span class="ww-walls-count">10 / 10</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+              OK: <span class="ww-stat-ok">0</span> · Pass: <span class="ww-stat-pass">0</span> · Issues: <span class="ww-stat-issues">0</span>
+            </div>
+          </div>
+          <div class="ww-player-card-right">
+            <div class="ww-sparkline-box">
+              <div class="ww-sparkline-meta">Avg: <span class="ww-time-avg">0ms</span> · Max: <span class="ww-time-max">0ms</span></div>
+              <svg class="ww-sparkline-svg"></svg>
+            </div>
+            <div class="ww-dist-box">
+              <div class="ww-dist-label">Goal Dist</div>
+              <div class="ww-dist-val-row">
+                <span class="ww-dist-val">-</span>
+                <span class="ww-dist-delta"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Board Card -->
+        <div class="ww-board-card">
+          <div id="ww-board-container"></div>
+        </div>
+
+        <!-- Player 0 Card (Bottom, Red) -->
+        <div id="ww-player-card-0" class="ww-player-card ww-card-p0">
+          <div class="ww-player-card-left">
+            <div class="ww-player-header">
+              <div class="ww-player-avatar ww-avatar-p0">0</div>
+              <span class="ww-player-name">Player 0</span>
+              <span class="ww-starter-badge" style="display:none;">First</span>
+            </div>
+            <div class="ww-walls-row">
+              <div class="ww-wall-pills"></div>
+              <span class="ww-walls-count">10 / 10</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+              OK: <span class="ww-stat-ok">0</span> · Pass: <span class="ww-stat-pass">0</span> · Issues: <span class="ww-stat-issues">0</span>
+            </div>
+          </div>
+          <div class="ww-player-card-right">
+            <div class="ww-sparkline-box">
+              <div class="ww-sparkline-meta">Avg: <span class="ww-time-avg">0ms</span> · Max: <span class="ww-time-max">0ms</span></div>
+              <svg class="ww-sparkline-svg"></svg>
+            </div>
+            <div class="ww-dist-box">
+              <div class="ww-dist-label">Goal Dist</div>
+              <div class="ww-dist-val-row">
+                <span class="ww-dist-val">-</span>
+                <span class="ww-dist-delta"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Replay Controls Card -->
+        <div class="ww-controls-card">
+          <div class="ww-scrubber-wrap">
+            <div id="ww-scrubber-ticks" class="ww-scrubber-ticks"></div>
+            <input type="range" id="ww-scrubber" class="ww-scrubber" min="0" max="0" value="0">
+            <div id="ww-scrubber-tooltip" class="ww-tooltip"></div>
+          </div>
+
+          <div class="ww-controls-row">
+            <div class="ww-btn-group">
+              <button class="ww-btn ww-btn-icon" id="ww-btn-first" title="First Frame (Q / Home)">⏮</button>
+              <button class="ww-btn ww-btn-icon" id="ww-btn-prev" title="Previous Turn (A / ←)">◀</button>
+              <button class="ww-btn ww-btn-primary ww-btn-icon" id="ww-btn-play" title="Play / Pause (Space)">▶</button>
+              <button class="ww-btn ww-btn-icon" id="ww-btn-next" title="Next Turn (D / →)">▶</button>
+              <button class="ww-btn ww-btn-icon" id="ww-btn-last" title="Last Frame (E / End)">⏭</button>
+            </div>
+
+            <div class="ww-btn-group">
+              <select id="ww-select-speed" class="ww-select" title="Playback Speed (+/-)">
+                <option value="0.25">0.25x</option>
+                <option value="0.5">0.5x</option>
+                <option value="1.0" selected>1.0x</option>
+                <option value="2.0">2.0x</option>
+                <option value="4.0">4.0x</option>
+                <option value="8.0">8.0x</option>
+              </select>
+
+              <label class="ww-checkbox-label" title="Loop playback">
+                <input type="checkbox" id="ww-toggle-loop">
+                <span>Loop</span>
+              </label>
+
+              <button class="ww-btn" id="ww-btn-snapshot" title="Save PNG Snapshot">
+                📷 PNG
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Move List Panel -->
+      <div class="ww-history-panel">
+        <div class="ww-history-header">
+          <div class="ww-history-title">Turn History</div>
+          <div class="ww-filter-chips">
+            <button class="ww-filter-chip ww-chip-active" data-filter="all">All</button>
+            <button class="ww-filter-chip" data-filter="walls">Walls</button>
+            <button class="ww-filter-chip" data-filter="issues">Issues</button>
+          </div>
+        </div>
+
+        <div id="ww-move-list" class="ww-move-list"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Modals -->
+
+  <!-- Logs Browser Modal -->
+  <div id="ww-logs-modal" class="ww-modal">
+    <div class="ww-modal-card">
+      <div class="ww-modal-header">
+        <div class="ww-modal-title">Select Match Log</div>
+        <button class="ww-modal-close">&times;</button>
+      </div>
+      <div class="ww-modal-body">
+        <div class="ww-logs-filter-row">
+          <input type="text" id="ww-logs-search" class="ww-input" placeholder="Search by agent or file name...">
+          <select id="ww-logs-sort" class="ww-select">
+            <option value="mtime">Newest</option>
+            <option value="turns">Turns</option>
+            <option value="name">Name</option>
+          </select>
+          <button id="ww-btn-refresh-logs" class="ww-btn" title="Scan logs directory">↻ Refresh</button>
+        </div>
+        <div id="ww-logs-status" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;"></div>
+        <div id="ww-logs-list" class="ww-logs-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Match Summary Modal -->
+  <div id="ww-summary-modal" class="ww-modal">
+    <div class="ww-modal-card">
+      <div class="ww-modal-header">
+        <div class="ww-modal-title">Match Results</div>
+        <button class="ww-modal-close">&times;</button>
+      </div>
+      <div class="ww-modal-body" id="ww-summary-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="ww-shortcuts-modal" class="ww-modal">
+    <div class="ww-modal-card">
+      <div class="ww-modal-header">
+        <div class="ww-modal-title">Keyboard Shortcuts</div>
+        <button class="ww-modal-close">&times;</button>
+      </div>
+      <div class="ww-modal-body">
+        <table class="ww-shortcuts-table">
+          <tbody>
+            <tr><td><kbd>Space</kbd></td><td>Play / Pause playback</td></tr>
+            <tr><td><kbd>A</kbd> or <kbd>←</kbd></td><td>Previous turn</td></tr>
+            <tr><td><kbd>D</kbd> or <kbd>→</kbd></td><td>Next turn</td></tr>
+            <tr><td><kbd>Q</kbd> or <kbd>Home</kbd></td><td>Jump to first frame</td></tr>
+            <tr><td><kbd>E</kbd> or <kbd>End</kbd></td><td>Jump to final frame</td></tr>
+            <tr><td><kbd>W</kbd> / <kbd>S</kbd></td><td>Previous / Next match in series</td></tr>
+            <tr><td><kbd>+</kbd> / <kbd>-</kbd></td><td>Increase / Decrease playback speed</td></tr>
+            <tr><td><kbd>P</kbd></td><td>Cycle shortest-path overlay</td></tr>
+            <tr><td><kbd>F</kbd></td><td>Flip board perspective</td></tr>
+            <tr><td><kbd>T</kbd></td><td>Toggle Dark / Light theme</td></tr>
+            <tr><td><kbd>?</kbd></td><td>Show this shortcuts help</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>Close dialogs</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/geometry.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/board.js"></script>
+  <script src="js/replay.js"></script>
+  <script src="js/timeline.js"></script>
+  <script src="js/panels.js"></script>
+  <script src="js/loader.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

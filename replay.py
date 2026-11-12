@@ -5,6 +5,8 @@ import argparse
 import json
 import sys
 import time
+import urllib.parse
+import webbrowser
 from pathlib import Path
 
 if __package__:
@@ -19,7 +21,32 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("log", type=Path)
     parser.add_argument("--delay", type=nonnegative_float, default=0.2)
+    parser.add_argument("--web", action="store_true", help="open in the modern browser-based replay viewer")
+    parser.add_argument("--paused", action="store_true", help="start paused in the web viewer")
+    parser.add_argument("--port", type=int, default=8420, help="server port for --web (default: 8420)")
     args = parser.parse_args(argv)
+
+    if not args.log.is_file():
+        parser.error(f"Log file not found: {args.log}")
+
+    if args.web:
+        try:
+            from serve import run_server
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("serve", Path(__file__).resolve().parent / "serve.py")
+            serve = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(serve)
+            run_server = serve.run_server
+
+        url = f"http://127.0.0.1:{args.port}/?file={urllib.parse.quote(args.log.name)}"
+        if args.paused:
+            url += "&paused=1"
+
+        print(f"Opening replay viewer in browser: {url}")
+        webbrowser.open(url)
+        return run_server(port=args.port, logs_dir=args.log.parent, open_browser=False)
+
     try:
         replay = json.loads(args.log.read_text(encoding="utf-8"))
         if replay["format_version"] != 1:
