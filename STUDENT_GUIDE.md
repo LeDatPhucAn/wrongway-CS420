@@ -134,5 +134,6 @@ Hãy thử thay đổi từng ý tưởng nhỏ, chạy đấu thử, rồi quan
 | `submissions/greedy.py` | Di chuyển tham lam theo khoảng cách tới đích |
 | `submissions/random_agent.py` | Chọn nước ngẫu nhiên, đôi khi đặt tường |
 | `submissions/wall_builder.py` | Ước lượng lợi ích của tường bằng BFS |
+| `submissions/wrongway_bot.py` | Port từ bot wrongway.app (Negamax + Alpha-Beta, heuristic 6 đặc trưng) |
 
 Nộp **một file `.py` độc lập**, ví dụ `MSSV.py`. File phải định nghĩa `choose_action(observation)` và trả về `dict` theo giao thức trên. Dùng thư viện chuẩn; không phụ thuộc file riêng, thư viện của arena hoặc dữ liệu trên máy cá nhân. Chạy thử cả khi là người chơi `0` và người chơi `1` trước khi nộp.
