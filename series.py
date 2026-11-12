@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent
 
 
 def run_series(player1, player2, games=10, swap_sides=True, seed=0,
-               timeout=1.0, max_turns=500, out_path=None):
+               timeout=1.0, max_turns=500, out_path=None, no_rank=False):
     p1_path = resolve_player(player1)
     p2_path = resolve_player(player2)
     name1 = p1_path.stem
@@ -70,6 +70,21 @@ def run_series(player1, player2, games=10, swap_sides=True, seed=0,
 
         print(f"Game {i + 1:2d}/{games}: P0 {p0_name:15s} vs P1 {p1_name:15s} -> {outcome_str}")
 
+        if not no_rank:
+            try:
+                from ranking import RankingSystem
+                ranking = RankingSystem()
+                ranking.update_match(
+                    player0=p0_name,
+                    player1=p1_name,
+                    winner=winner_id,
+                    turns=total_turns,
+                    log_path=str(out_path) if out_path else None,
+                    seed=game_seed
+                )
+            except Exception:
+                pass
+
     elapsed = time.time() - start_time
     avg_turns = sum(turns_list) / max(1, len(turns_list))
 
@@ -95,6 +110,18 @@ def run_series(player1, player2, games=10, swap_sides=True, seed=0,
     print("-" * 65)
     print(f"Side advantage: P0 (bottom) = {side_wins['P0']} wins | P1 (top) = {side_wins['P1']} wins")
     print(f"Average match length: {avg_turns:.1f} turns")
+    if not no_rank:
+        try:
+            from ranking import RankingSystem
+            ranking = RankingSystem()
+            a1 = ranking.get_agent(name1)
+            a2 = ranking.get_agent(name2)
+            print("-" * 65)
+            print("UPDATED RATINGS (Score = μ - 3σ):")
+            print(f"  {name1:18s}: Score = {a1['score']:6.2f} (μ={a1['mu']:.2f}, σ={a1['sigma']:.2f})")
+            print(f"  {name2:18s}: Score = {a2['score']:6.2f} (μ={a2['mu']:.2f}, σ={a2['sigma']:.2f})")
+        except Exception:
+            pass
     print("=" * 65)
 
     series_data = {
@@ -124,6 +151,7 @@ def main(argv=None):
     parser.add_argument("--timeout", type=positive_float, default=1.0, help="Seconds per action (default: 1.0)")
     parser.add_argument("--max-turns", type=positive_int, default=500, help="Max turns per game (default: 500)")
     parser.add_argument("--out", type=Path, default=ROOT / "logs" / "series.json", help="Output series JSON log")
+    parser.add_argument("--no-rank", action="store_true", help="do not update persistent rankings in ranking.db")
     args = parser.parse_args(argv)
 
     run_series(
@@ -134,7 +162,8 @@ def main(argv=None):
         seed=args.seed,
         timeout=args.timeout,
         max_turns=args.max_turns,
-        out_path=args.out
+        out_path=args.out,
+        no_rank=args.no_rank
     )
     return 0
 

@@ -39,6 +39,11 @@ class ReplayRequestHandler(http.server.SimpleHTTPRequestHandler):
         elif path.startswith("/api/logs/"):
             filename = urllib.parse.unquote(path[len("/api/logs/"):])
             self._handle_api_get_log(filename)
+        elif path == "/api/leaderboard":
+            self._handle_api_leaderboard()
+        elif path.startswith("/api/leaderboard/"):
+            agent_name = urllib.parse.unquote(path[len("/api/leaderboard/"):])
+            self._handle_api_get_agent(agent_name)
         else:
             # Default to index.html for root path
             if path in ("", "/"):
@@ -112,6 +117,24 @@ class ReplayRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(content)
         except Exception as e:
             self.send_error(500, f"Error reading log: {e}")
+
+    def _handle_api_leaderboard(self):
+        """Return the current TrueSkill leaderboard from ranking.db."""
+        try:
+            from ranking import RankingSystem
+            ranking = RankingSystem()
+            self._send_json(ranking.get_leaderboard())
+        except Exception as e:
+            self.send_error(500, f"Error reading leaderboard: {e}")
+
+    def _handle_api_get_agent(self, agent_name):
+        """Return rating profile and recent matches for an agent."""
+        try:
+            from ranking import RankingSystem
+            ranking = RankingSystem()
+            self._send_json(ranking.get_agent_history(agent_name))
+        except Exception as e:
+            self.send_error(500, f"Error reading agent history: {e}")
 
     def _send_json(self, payload):
         body = json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")

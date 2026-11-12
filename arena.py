@@ -155,6 +155,7 @@ def main(argv=None):
     parser.add_argument("--delay", type=nonnegative_float, default=0.0, help="display delay in seconds")
     parser.add_argument("--log", type=Path, help="save the full JSON replay")
     parser.add_argument("--open", action="store_true", help="open the web replay viewer after match completion")
+    parser.add_argument("--no-rank", action="store_true", help="do not update persistent rankings in ranking.db")
     args = parser.parse_args(argv)
     try:
         players = [resolve_player(value, args.submissions_dir)
@@ -199,6 +200,26 @@ def main(argv=None):
         print("P{} {}: {}".format(i, names[i], json.dumps(stats)))
     if args.log:
         print("Replay: {}".format(args.log))
+    if not args.no_rank:
+        try:
+            from ranking import RankingSystem
+            ranking = RankingSystem()
+            u = ranking.update_match(
+                player0=names[0],
+                player1=names[1],
+                winner=result["winner"],
+                turns=result["total_turns"],
+                log_path=str(args.log) if args.log else None,
+                seed=args.seed
+            )
+            p0, p1 = u["player0"], u["player1"]
+            d0 = f"+{p0['score_delta']:.2f}" if p0['score_delta'] >= 0 else f"{p0['score_delta']:.2f}"
+            d1 = f"+{p1['score_delta']:.2f}" if p1['score_delta'] >= 0 else f"{p1['score_delta']:.2f}"
+            print("Ranking: P0 {} {:.2f} ({}) | P1 {} {:.2f} ({})".format(
+                p0['name'], p0['score_after'], d0, p1['name'], p1['score_after'], d1
+            ))
+        except Exception:
+            pass
     if args.open and args.log:
         try:
             import urllib.parse

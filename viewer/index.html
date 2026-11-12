@@ -27,6 +27,9 @@
     </div>
 
     <div class="ww-header-right">
+      <button class="ww-btn" id="ww-btn-leaderboard" title="View TrueSkill Leaderboard">
+        🏆 Leaderboard
+      </button>
       <button class="ww-btn ww-btn-primary" id="ww-btn-logs" title="Choose a log from logs/ folder">
         📂 Open Log
       </button>
@@ -290,6 +293,20 @@
             <tr><td><kbd>Esc</kbd></td><td>Close dialogs</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="ww-leaderboard-modal" class="ww-modal">
+    <div class="ww-modal-card" style="max-width: 720px;">
+      <div class="ww-modal-header">
+        <div class="ww-modal-title">🏆 Agent Leaderboard (TrueSkill μ - 3σ)</div>
+        <button class="ww-modal-close">&times;</button>
+      </div>
+      <div class="ww-modal-body">
+        <div id="ww-leaderboard-status" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;"></div>
+        <div id="ww-leaderboard-table-wrap"></div>
       </div>
     </div>
   </div>

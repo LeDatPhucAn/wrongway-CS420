@@ -106,6 +106,12 @@ class TestViewerBackend(unittest.TestCase):
         status, _, _ = self._get("/api/logs/..%2f..%2farena.py")
         self.assertIn(status, (400, 404))
 
+    def test_api_leaderboard(self):
+        status, _, body = self._get("/api/leaderboard")
+        self.assertEqual(status, 200)
+        data = json.loads(body.decode("utf-8"))
+        self.assertIsInstance(data, list)
+
     def test_series_runner(self):
         out_series = self.logs_dir / "series_test.json"
         data = run_series(

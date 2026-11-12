@@ -98,10 +98,33 @@ The viewer reads directly from your `logs/` directory without requiring any syst
 
 ---
 
-## 5. Running Tests
+## 5. Agent Ranking & Leaderboard (TrueSkill μ - 3σ)
 
-Run the backend test suite:
+Inspired by bombIT (Bomberland), Wrongway includes an automated, incremental TrueSkill rating system:
+- **Zero Recounting:** Whenever a match finishes in `arena.py` or `series.py`, only the latest match outcome is calculated and committed to `ranking.db`. It never re-reads or recounts past logs.
+- **Rating Formula:**
+  - Skill estimate: `μ` (initial: 100.0)
+  - Uncertainty: `σ` (initial: 33.33)
+  - Conservative Leaderboard Score: `Score = μ - 3σ` (ensures agents need multiple games to establish a high score).
+- **Viewing the Leaderboard:**
+  - In terminal:
+    ```powershell
+    python ranking.py
+    ```
+  - View specific agent statistics and recent match history:
+    ```powershell
+    python ranking.py --agent greedy
+    ```
+  - In the Web Viewer: Click the **🏆 Leaderboard** button in the header.
+  - Reset ratings: `python ranking.py --reset`
+  - Rebuild from all logs in `logs/`: `python ranking.py --rebuild`
+
+---
+
+## 6. Running Tests
+
+Run the test suite:
 ```powershell
-python -m unittest tests/test_viewer_backend.py
+python -m unittest discover tests
 ```
 This tests static file delivery, `/api/logs` directory indexing, path traversal safety, series execution, and BFS distance parity.

@@ -160,6 +160,74 @@
       });
     });
 
+    // Leaderboard modal button & fetch
+    const lbBtn = document.getElementById('ww-btn-leaderboard');
+    const lbModal = document.getElementById('ww-leaderboard-modal');
+    const lbWrap = document.getElementById('ww-leaderboard-table-wrap');
+    const lbStatus = document.getElementById('ww-leaderboard-status');
+
+    function loadLeaderboard() {
+      if (!lbWrap) return;
+      if (lbStatus) lbStatus.textContent = 'Fetching current rankings...';
+      fetch('/api/leaderboard')
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then(data => {
+          if (!data || !data.length) {
+            if (lbStatus) lbStatus.textContent = 'No agents ranked yet in ranking.db.';
+            lbWrap.innerHTML = '<div class="ww-logs-empty">Play matches with arena.py or series.py to establish ratings.</div>';
+            return;
+          }
+          if (lbStatus) lbStatus.textContent = `${data.length} agents ranked. Leaderboard updates automatically after every match.`;
+          let html = `
+            <table class="ww-summary-table ww-leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Agent</th>
+                  <th style="text-align:right;">Score (μ - 3σ)</th>
+                  <th style="text-align:right;">Skill μ</th>
+                  <th style="text-align:right;">Uncertainty σ</th>
+                  <th style="text-align:center;">W / D / L</th>
+                  <th style="text-align:right;">Win %</th>
+                  <th style="text-align:right;">Avg Turns</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          data.forEach(entry => {
+            const rankBadge = entry.rank === 1 ? '🥇 #1' : (entry.rank === 2 ? '🥈 #2' : (entry.rank === 3 ? '🥉 #3' : `#${entry.rank}`));
+            html += `
+              <tr>
+                <td style="font-weight:700;">${rankBadge}</td>
+                <td style="font-weight:600;">${entry.name}</td>
+                <td style="text-align:right; font-weight:700; color:var(--accent);">${entry.score.toFixed(2)}</td>
+                <td style="text-align:right; color:var(--text-muted);">${entry.mu.toFixed(2)}</td>
+                <td style="text-align:right; color:var(--text-subtle);">${entry.sigma.toFixed(2)}</td>
+                <td style="text-align:center;">${entry.wins} / ${entry.draws} / ${entry.losses}</td>
+                <td style="text-align:right;">${entry.win_rate.toFixed(1)}%</td>
+                <td style="text-align:right; color:var(--text-muted);">${entry.avg_turns.toFixed(1)}</td>
+              </tr>
+            `;
+          });
+          html += '</tbody></table>';
+          lbWrap.innerHTML = html;
+        })
+        .catch(err => {
+          if (lbStatus) lbStatus.textContent = 'API unavailable (offline or file:// mode).';
+          lbWrap.innerHTML = '<div class="ww-logs-empty">Start server via <code>python serve.py</code> to view live rankings.</div>';
+        });
+    }
+
+    if (lbBtn && lbModal) {
+      lbBtn.addEventListener('click', () => {
+        lbModal.classList.add('ww-modal-open');
+        loadLeaderboard();
+      });
+    }
+
     // Shortcuts modal button
     const helpBtn = document.getElementById('ww-btn-help');
     const helpModal = document.getElementById('ww-shortcuts-modal');
