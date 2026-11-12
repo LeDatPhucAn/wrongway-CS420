@@ -1,0 +1,1 @@
+"""Python Arena for Wrongway game."""
