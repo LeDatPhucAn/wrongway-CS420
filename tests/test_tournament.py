@@ -32,6 +32,14 @@ class TestTournament(unittest.TestCase):
         with_template = discover_agents(ROOT / "submissions", include_template=True)
         self.assertIn("TEMPLATE", {p.stem for p in with_template})
 
+    def test_discover_agents_exclude_globs(self):
+        filtered = discover_agents(ROOT / "submissions", exclude=["*_easy", "*_normal"])
+        names = {p.stem for p in filtered}
+        for excluded in ("counter_easy", "counter_normal", "runner_easy", "runner_normal", "waller_easy", "waller_normal"):
+            self.assertNotIn(excluded, names)
+        for kept in ("counter_hard", "runner_hard", "waller_hard", "wrongway_bot"):
+            self.assertIn(kept, names)
+
     def test_schedule_odd_side_balance(self):
         dummy = [Path(f"bot_{i}.py") for i in range(13)]
         pairs = build_round_robin_schedule(dummy)

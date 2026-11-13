@@ -106,6 +106,8 @@ def run_match(player1, player2, *, timeout=1.0, max_turns=500, seed=0,
         while not environment.done:
             player = environment.current_player
             observation = environment.get_observation(player)
+            print("OBSERVATION",observation)
+
             response = agents[player].act(observation)
             if response.status == "ok":
                 update = environment.step(response.action)

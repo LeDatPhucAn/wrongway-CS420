@@ -8,6 +8,7 @@ leaderboard updates in ranking.db, and replayable per-pair series logs.
 
 import argparse
 import concurrent.futures
+import fnmatch
 import json
 import os
 from pathlib import Path
@@ -34,6 +35,10 @@ def default_workers() -> int:
     return max(1, min(6, cpus // 2))
 
 
+def _is_excluded(stem: str, patterns: Sequence[str]) -> bool:
+    return any(fnmatch.fnmatch(stem, pat) for pat in patterns)
+
+
 def discover_agents(
     submissions_dir: Path = DEFAULT_SUBMISSIONS_DIR,
     include_template: bool = False,
@@ -42,14 +47,14 @@ def discover_agents(
 ) -> List[Path]:
     """Resolve participating bot files from submissions_dir or explicit names."""
     folder = Path(submissions_dir).resolve()
-    excluded = {Path(name).stem for name in (exclude or [])}
+    excluded = [Path(name).stem for name in (exclude or [])]
 
     if agents:
         resolved: List[Path] = []
         seen = set()
         for item in agents:
             path = resolve_player(item, folder)
-            if path.stem in excluded or path in seen:
+            if _is_excluded(path.stem, excluded) or path in seen:
                 continue
             seen.add(path)
             resolved.append(path)
@@ -62,7 +67,7 @@ def discover_agents(
                 continue
             if not include_template and path.stem == "TEMPLATE":
                 continue
-            if path.stem in excluded:
+            if _is_excluded(path.stem, excluded):
                 continue
             resolved.append(path.resolve())
 
@@ -224,6 +229,12 @@ def run_tournament(
         ranking_sys = RankingSystem()
         if reset_rank:
             ranking_sys.reset()
+
+    if out_dir and save_series_logs:
+        series_dir = Path(out_dir) / "series"
+        if series_dir.is_dir():
+            for old_file in series_dir.glob("*.json"):
+                old_file.unlink()
 
     tasks: List[Tuple[int, int, str, str, float, int, int, float]] = []
     for pair_idx, (_ia, _ib, pa_path, pb_path) in enumerate(pairs):

@@ -9,7 +9,6 @@ def choose_action(observation):
     """Đi tới ô hợp lệ có khoảng cách tới đích nhỏ nhất."""
     legal_moves = observation["legal_moves"]
     distances = observation["distances"]
-
     if not legal_moves:
         return {"type": "pass"}
 
