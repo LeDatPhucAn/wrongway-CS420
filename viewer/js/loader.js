@@ -119,6 +119,197 @@
       window.location.hash = str ? `#${str}` : '';
     }
 
+    _escapeHtml(text) {
+      return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    _formatLogEntry(log) {
+      const p1 = this._escapeHtml(log.player1 || 'P0');
+      const p2 = this._escapeHtml(log.player2 || 'P1');
+      const name = this._escapeHtml(log.name || '');
+      const count = log.total_turns || 0;
+
+      if (log.type === 'tournament') {
+        return {
+          icon: '🏅',
+          title: `${p1} <span class="ww-text-muted">·</span> ${p2}`,
+          name,
+          countLabel: `${count} matches`,
+          badge: log.winner
+            ? `<span class="ww-log-winner">Leader: ${this._escapeHtml(log.winner)}</span>`
+            : `<span class="ww-log-draw">Tournament</span>`,
+        };
+      }
+      if (log.type === 'series') {
+        return {
+          icon: '📚',
+          title: `${p1} <span class="ww-text-muted">vs</span> ${p2}`,
+          name,
+          countLabel: `${count} matches`,
+          badge: `<span class="ww-log-winner">Series</span>`,
+        };
+      }
+      return {
+        icon: '📄',
+        title: `${p1} <span class="ww-text-muted">vs</span> ${p2}`,
+        name,
+        countLabel: `${count} turns`,
+        badge: log.winner
+          ? `<span class="ww-log-winner">Won: ${this._escapeHtml(log.winner)}</span>`
+          : `<span class="ww-log-draw">Draw</span>`,
+      };
+    }
+
+    _findSeriesLog(sourceName, agentA, agentB) {
+      const idx = (sourceName || '').lastIndexOf('/');
+      const baseDir = idx >= 0 ? sourceName.slice(0, idx + 1) : '';
+      const candidates = [
+        `${baseDir}series/${agentA}_vs_${agentB}.json`,
+        `${baseDir}series/${agentB}_vs_${agentA}.json`,
+      ];
+      for (const cand of candidates) {
+        const match = this.serverLogs.find(l => l.name === cand);
+        if (match) return match.name;
+      }
+      const suffixA = `/${agentA}_vs_${agentB}.json`;
+      const suffixB = `/${agentB}_vs_${agentA}.json`;
+      const fallback = this.serverLogs.find(
+        l => l.name === `${agentA}_vs_${agentB}.json` ||
+             l.name === `${agentB}_vs_${agentA}.json` ||
+             l.name.endsWith(suffixA) ||
+             l.name.endsWith(suffixB)
+      );
+      return fallback ? fallback.name : null;
+    }
+
+    openTournamentModal(data, sourceName = '') {
+      const modal = this.elements.tournamentModal;
+      const body = this.elements.tournamentContent;
+      if (!modal || !body) {
+        alert('Tournament summary view is unavailable.');
+        return;
+      }
+
+      const cfg = data.config || {};
+      const side = data.side_wins || {};
+      const standings = data.standings || [];
+      const h2h = data.head_to_head || {};
+      const total = cfg.total_matches || (data.matches ? data.matches.length : 0);
+      const p0Wins = side.P0 || 0;
+      const p1Wins = side.P1 || 0;
+      const draws = side.draw || 0;
+      const pct = n => (total > 0 ? ((n / total) * 100).toFixed(1) : '0.0');
+
+      const hasTrueSkill = standings.some(r => typeof r.trueskill_score === 'number');
+
+      let html = `
+        <div class="ww-tourney-meta">
+          <span><strong>${standings.length}</strong> bots</span>
+          <span><strong>${total}</strong> matches (${this._escapeHtml(cfg.games_per_pair ?? '?')} per pair)</span>
+          <span>P0 wins: <strong>${p0Wins}</strong> (${pct(p0Wins)}%)</span>
+          <span>P1 wins: <strong>${p1Wins}</strong> (${pct(p1Wins)}%)</span>
+          <span>Draws: <strong>${draws}</strong> (${pct(draws)}%)</span>
+          <span>Elapsed: <strong>${this._escapeHtml(data.elapsed_seconds ?? '?')}s</strong></span>
+        </div>
+        <div class="ww-tourney-section-title">Standings (3 pts win / 1 pt draw / 0 pts loss)</div>
+        <div class="ww-tourney-scroll">
+          <table class="ww-tourney-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Bot</th>
+                <th>GP</th>
+                <th>W/D/L</th>
+                <th>Pts</th>
+                <th>Win%</th>
+                <th>P0 (W-L)</th>
+                <th>P1 (W-L)</th>
+                <th>AvgT</th>
+                <th>TO/Err</th>
+                ${hasTrueSkill ? '<th>TrueSkill</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      standings.forEach(row => {
+        const badge = row.rank === 1 ? '🥇 #1' : (row.rank === 2 ? '🥈 #2' : (row.rank === 3 ? '🥉 #3' : `#${row.rank}`));
+        const issues = (row.timeouts || 0) + (row.errors || 0) + (row.invalids || 0);
+        html += `
+          <tr>
+            <td><strong>${badge}</strong></td>
+            <td><strong>${this._escapeHtml(row.name)}</strong></td>
+            <td>${row.games ?? 0}</td>
+            <td>${row.wins ?? 0}/${row.draws ?? 0}/${row.losses ?? 0}</td>
+            <td><strong>${row.points ?? 0}</strong></td>
+            <td>${Number(row.win_rate ?? 0).toFixed(1)}%</td>
+            <td>${row.p0_wins ?? 0}-${row.p0_losses ?? 0}</td>
+            <td>${row.p1_wins ?? 0}-${row.p1_losses ?? 0}</td>
+            <td>${Number(row.avg_turns ?? 0).toFixed(1)}</td>
+            <td class="${issues > 0 ? 'ww-val-error' : ''}">${row.timeouts || 0}/${(row.errors || 0) + (row.invalids || 0)}</td>
+            ${hasTrueSkill ? `<td><strong>${Number(row.trueskill_score ?? 0).toFixed(2)}</strong></td>` : ''}
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table></div>`;
+
+      const ordered = standings.map(r => r.name);
+      if (ordered.length > 1 && Object.keys(h2h).length > 0) {
+        html += `
+          <div class="ww-tourney-section-title">Head-to-Head Matrix (click any matchup to open its series replay)</div>
+          <div class="ww-tourney-scroll">
+            <table class="ww-tourney-table ww-h2h-table">
+              <thead>
+                <tr>
+                  <th>Bot</th>
+                  ${ordered.map((_n, idx) => `<th title="${this._escapeHtml(ordered[idx])}">#${idx + 1}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        ordered.forEach((a, idx) => {
+          html += `<tr><td>#${idx + 1} ${this._escapeHtml(a)}</td>`;
+          ordered.forEach(b => {
+            if (a === b) {
+              html += `<td class="ww-text-muted">--</td>`;
+            } else {
+              const rec = (h2h[a] && h2h[a][b]) || { wins: 0, losses: 0, draws: 0 };
+              const txt = rec.draws ? `${rec.wins}-${rec.losses}-${rec.draws}` : `${rec.wins}-${rec.losses}`;
+              const seriesLog = this._findSeriesLog(sourceName, a, b);
+              if (seriesLog) {
+                html += `<td><button class="ww-h2h-btn" data-series-log="${this._escapeHtml(seriesLog)}" title="Watch ${this._escapeHtml(a)} vs ${this._escapeHtml(b)}">${txt}</button></td>`;
+              } else {
+                html += `<td>${txt}</td>`;
+              }
+            }
+          });
+          html += `</tr>`;
+        });
+
+        html += `</tbody></table></div>`;
+      }
+
+      body.innerHTML = html;
+      body.querySelectorAll('.ww-h2h-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-series-log');
+          if (target) {
+            modal.classList.remove('ww-modal-open');
+            this.fetchAndLoadLog(target);
+          }
+        });
+      });
+
+      modal.classList.add('ww-modal-open');
+    }
+
     loadFiles(files) {
       if (!files || !files.length) return;
 
@@ -141,9 +332,12 @@
 
       Promise.all(readPromises).then(results => {
         const matches = [];
+        let tournamentData = null;
         for (let i = 0; i < results.length; i++) {
           const item = results[i];
-          if (item.type === 'series' && Array.isArray(item.matches)) {
+          if (item.type === 'tournament' && Array.isArray(item.standings)) {
+            tournamentData = item;
+          } else if (item.type === 'series' && Array.isArray(item.matches)) {
             item.matches.forEach((m, idx) => {
               m._fileName = `${item._fileName} #${idx + 1}`;
               matches.push(m);
@@ -156,6 +350,9 @@
         if (matches.length > 0) {
           this.setPlaylist(matches, 0);
           this._saveRecentLog(matches[0]._fileName || 'Custom File');
+        } else if (tournamentData) {
+          this.openTournamentModal(tournamentData, tournamentData._fileName || 'summary.json');
+          this._saveRecentLog(tournamentData._fileName || 'summary.json');
         } else {
           alert('No valid Wrongway match data found in selected file(s).');
         }
@@ -165,7 +362,9 @@
     }
 
     loadJsonData(data, name = 'Match') {
-      if (data.type === 'series' && Array.isArray(data.matches)) {
+      if (data.type === 'tournament' && Array.isArray(data.standings)) {
+        this.openTournamentModal(data, name);
+      } else if (data.type === 'series' && Array.isArray(data.matches)) {
         this.setPlaylist(data.matches, 0, data.summary);
       } else if (data.initial_state && data.turns) {
         data._fileName = name;
@@ -276,7 +475,7 @@
       container.innerHTML = `
         <div class="ww-logs-section-title">Recently Viewed</div>
         <div class="ww-recent-logs-list">
-          ${this.recentLogs.map(name => `<div class="ww-recent-log-item">📄 ${name}</div>`).join('')}
+          ${this.recentLogs.map(name => `<div class="ww-recent-log-item">📄 ${this._escapeHtml(name)}</div>`).join('')}
         </div>
       `;
     }
@@ -291,10 +490,11 @@
       let filtered = this.serverLogs.filter(log => {
         if (!query) return true;
         const nameMatch = log.name && log.name.toLowerCase().includes(query);
+        const typeMatch = log.type && log.type.toLowerCase().includes(query);
         const p1Match = log.player1 && log.player1.toLowerCase().includes(query);
         const p2Match = log.player2 && log.player2.toLowerCase().includes(query);
         const winnerMatch = log.winner && log.winner.toLowerCase().includes(query);
-        return nameMatch || p1Match || p2Match || winnerMatch;
+        return nameMatch || typeMatch || p1Match || p2Match || winnerMatch;
       });
 
       // Sort
@@ -318,18 +518,16 @@
         item.className = 'ww-log-item';
 
         const dateStr = log.mtime ? new Date(log.mtime * 1000).toLocaleString() : '';
-        const winnerBadge = log.winner
-          ? `<span class="ww-log-winner">Won: ${log.winner}</span>`
-          : `<span class="ww-log-draw">Draw</span>`;
+        const formatted = this._formatLogEntry(log);
 
         item.innerHTML = `
           <div class="ww-log-info">
-            <div class="ww-log-title">${log.player1 || 'P0'} <span class="ww-text-muted">vs</span> ${log.player2 || 'P1'}</div>
-            <div class="ww-log-file">${log.name}</div>
+            <div class="ww-log-title">${formatted.icon} ${formatted.title}</div>
+            <div class="ww-log-file">${formatted.name}</div>
           </div>
           <div class="ww-log-meta">
-            ${winnerBadge}
-            <span class="ww-log-turns">${log.total_turns || 0} turns</span>
+            ${formatted.badge}
+            <span class="ww-log-turns">${formatted.countLabel}</span>
             <span class="ww-log-date">${dateStr}</span>
           </div>
         `;
@@ -353,16 +551,14 @@
           this.serverLogs.forEach(log => {
             const card = document.createElement('div');
             card.className = 'ww-empty-log-card';
-            const winnerBadge = log.winner
-              ? `<span class="ww-log-winner">Won: ${log.winner}</span>`
-              : `<span class="ww-log-draw">Draw</span>`;
+            const formatted = this._formatLogEntry(log);
             card.innerHTML = `
-              <div class="ww-empty-log-icon">📄</div>
+              <div class="ww-empty-log-icon">${formatted.icon}</div>
               <div class="ww-empty-log-info">
-                <div class="ww-empty-log-title">${log.player1 || 'P0'} <span class="ww-text-muted">vs</span> ${log.player2 || 'P1'}</div>
-                <div class="ww-empty-log-sub">${log.name} · ${log.total_turns || 0} turns</div>
+                <div class="ww-empty-log-title">${formatted.title}</div>
+                <div class="ww-empty-log-sub">${formatted.name} · ${formatted.countLabel}</div>
               </div>
-              <div>${winnerBadge}</div>
+              <div>${formatted.badge}</div>
             `;
             card.addEventListener('click', () => {
               this.fetchAndLoadLog(log.name);
@@ -410,7 +606,7 @@
           })
           .then(data => {
             this.loadJsonData(data, cleanName);
-            if (!paused) {
+            if (!paused && data.type !== 'tournament') {
               this.controller.play();
             }
           })

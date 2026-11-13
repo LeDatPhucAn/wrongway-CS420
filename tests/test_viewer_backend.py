@@ -106,6 +106,51 @@ class TestViewerBackend(unittest.TestCase):
         status, _, _ = self._get("/api/logs/..%2f..%2farena.py")
         self.assertIn(status, (400, 404))
 
+    def test_api_recursive_leaf_logs(self):
+        nested_dir = self.logs_dir / "tournament" / "series"
+        nested_dir.mkdir(parents=True)
+        try:
+            nested_match = nested_dir / "leaf_match.json"
+            sample_payload = json.loads(self.sample_match_path.read_text(encoding="utf-8"))
+            save_json(nested_match, sample_payload)
+
+            summary_path = self.logs_dir / "tournament" / "summary.json"
+            save_json(summary_path, {
+                "type": "tournament",
+                "agents": ["greedy", "random_agent"],
+                "config": {"games_per_pair": 5, "total_matches": 5},
+                "standings": [{"rank": 1, "name": "greedy"}],
+                "matches": [],
+            })
+
+            unrelated_path = self.logs_dir / "tournament" / "notes.json"
+            save_json(unrelated_path, {"unrelated": True})
+
+            status, _, body = self._get("/api/logs")
+            self.assertEqual(status, 200)
+            entries = {item["name"]: item for item in json.loads(body.decode("utf-8"))}
+
+            self.assertIn("tournament/series/leaf_match.json", entries)
+            self.assertEqual(entries["tournament/series/leaf_match.json"]["type"], "match")
+            self.assertIn("tournament/summary.json", entries)
+            self.assertEqual(entries["tournament/summary.json"]["type"], "tournament")
+            self.assertNotIn("tournament/notes.json", entries)
+
+            # Fetch nested leaf file via encoded slash and literal slash
+            for req_path in (
+                "/api/logs/tournament%2Fseries%2Fleaf_match.json",
+                "/api/logs/tournament/series/leaf_match.json",
+            ):
+                s, _, b = self._get(req_path)
+                self.assertEqual(s, 200)
+                self.assertIn("turns", json.loads(b.decode("utf-8")))
+
+            # Nested traversal still blocked
+            s, _, _ = self._get("/api/logs/tournament%2F..%2F..%2Farena.py")
+            self.assertEqual(s, 400)
+        finally:
+            shutil.rmtree(self.logs_dir / "tournament", ignore_errors=True)
+
     def test_api_leaderboard(self):
         status, _, body = self._get("/api/leaderboard")
         self.assertEqual(status, 200)

@@ -317,6 +317,7 @@ body {
 
 .ww-empty-log-info {
   flex: 1;
+  min-width: 0;
 }
 
 .ww-empty-log-title {
@@ -329,6 +330,7 @@ body {
   font-size: 0.75rem;
   color: var(--text-muted);
   font-family: monospace;
+  word-break: break-word;
 }
 
 .ww-empty-hint {
@@ -996,12 +998,70 @@ body {
   border-color: var(--accent);
 }
 
+.ww-log-info { flex: 1; min-width: 0; padding-right: 12px; }
 .ww-log-title { font-weight: 600; font-size: 0.88rem; margin-bottom: 2px; }
-.ww-log-file { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
-.ww-log-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.ww-log-file { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; word-break: break-word; }
+.ww-log-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
 .ww-log-winner { font-size: 0.75rem; color: #16a34a; font-weight: 600; }
 .ww-log-draw { font-size: 0.75rem; color: var(--text-muted); }
 .ww-log-turns, .ww-log-date { font-size: 0.72rem; color: var(--text-subtle); }
+
+/* Tournament Summary Modal */
+.ww-tourney-meta {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ww-tourney-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 14px 0 8px;
+  color: var(--text);
+}
+.ww-tourney-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.ww-tourney-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.ww-tourney-table th,
+.ww-tourney-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+.ww-tourney-table th {
+  background: var(--border-soft);
+  font-weight: 600;
+  text-align: right;
+}
+.ww-tourney-table td { text-align: right; }
+.ww-tourney-table th:nth-child(1),
+.ww-tourney-table td:nth-child(1),
+.ww-tourney-table th:nth-child(2),
+.ww-tourney-table td:nth-child(2) { text-align: left; }
+.ww-h2h-table th, .ww-h2h-table td { text-align: center; padding: 5px 6px; }
+.ww-h2h-table th:first-child, .ww-h2h-table td:first-child { text-align: left; font-weight: 600; }
+.ww-h2h-btn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 2px 5px;
+  font: inherit;
+  color: var(--accent);
+  cursor: pointer;
+}
+.ww-h2h-btn:hover {
+  background: var(--border-soft);
+  border-color: var(--accent);
+}
 
 /* Shortcuts Table */
 .ww-shortcuts-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }

@@ -60,6 +60,8 @@
       logsSearchInput: document.getElementById('ww-logs-search'),
       logsSortSelect: document.getElementById('ww-logs-sort'),
       logsRefreshBtn: document.getElementById('ww-btn-refresh-logs'),
+      tournamentModal: document.getElementById('ww-tournament-modal'),
+      tournamentContent: document.getElementById('ww-tournament-modal-content'),
       seriesBar: document.getElementById('ww-series-bar'),
       prevMatchBtn: document.getElementById('ww-btn-prev-match'),
       nextMatchBtn: document.getElementById('ww-btn-next-match')
