@@ -83,15 +83,22 @@ class TestViewerBackend(unittest.TestCase):
         status, headers, body = self._get("/")
         self.assertEqual(status, 200)
         self.assertIn(b"Wrongway - Replay Viewer", body)
+        self.assertIn(b"ww-tab-btn-history", body)
+        self.assertIn(b"ww-history-tab-panel", body)
+        self.assertIn(b"ww-bvb-grid", body)
+        self.assertNotIn(b"ww-subtab-humanvsbot", body)
+        self.assertIn(b"ww-btn-resign", body)
 
     def test_static_css_and_js(self):
         status, _, body = self._get("/css/style.css")
         self.assertEqual(status, 200)
         self.assertIn(b"--p0-primary", body)
+        self.assertIn(b"100vh", body)
 
         status, _, body = self._get("/js/app.js")
         self.assertEqual(status, 200)
         self.assertIn(b"BoardRenderer", body)
+        self.assertIn(b"switchMainTab", body)
 
     def test_api_logs_listing(self):
         status, headers, body = self._get("/api/logs")

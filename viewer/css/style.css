@@ -80,6 +80,7 @@ body {
   background-size: 40px 40px;
   color: var(--text);
   min-height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -87,23 +88,59 @@ body {
 
 /* App Header */
 .ww-header {
-  height: 60px;
+  height: 46px;
   background: var(--card);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 16px;
   position: sticky;
   top: 0;
   z-index: 50;
   box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
 }
 
 .ww-header-left {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.ww-nav-tabs {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.ww-nav-tab {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ww-nav-tab:hover {
+  color: var(--text);
+}
+
+.ww-nav-tab.ww-nav-tab-active {
+  background: var(--card);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
 }
 
 .ww-logo {
@@ -153,13 +190,16 @@ body {
 .ww-series-bar {
   background: var(--card);
   border-bottom: 1px solid var(--border);
-  padding: 8px 20px;
+  padding: 3px 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  font-size: 0.85rem;
+  gap: 12px;
+  font-size: 0.8rem;
   font-weight: 500;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 20;
 }
 
 .ww-series-label {
@@ -201,11 +241,11 @@ body {
 }
 
 .ww-btn-icon {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .ww-btn-sm {
@@ -239,10 +279,20 @@ body {
 /* Main Container */
 .ww-main {
   flex: 1;
-  max-width: 1280px;
+  min-height: 0;
+  max-width: 1320px;
   width: 100%;
   margin: 0 auto;
-  padding: 18px 20px 40px;
+  padding: 6px 16px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ww-tab-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Empty State */
@@ -252,12 +302,14 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 60px 20px;
+  padding: 28px 20px;
   background: var(--card);
   border: 2px dashed var(--border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-sm);
-  margin-top: 40px;
+  margin-top: 12px;
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
 }
 
 .ww-empty-icon {
@@ -345,9 +397,15 @@ body {
 
 /* Main Layout Grid */
 .ww-main-view {
+  flex: 1;
+  min-height: 0;
+  max-width: 940px;
+  width: 100%;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 520px) 340px;
+  justify-content: center;
+  gap: 16px;
   align-items: start;
 }
 
@@ -362,22 +420,26 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 0;
+  width: 100%;
 }
 
 /* Player Cards */
 .ww-player-card {
   width: 100%;
-  max-width: 602px;
+  max-width: 520px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 12px 18px;
+  border-radius: 10px;
+  padding: 5px 12px;
   box-shadow: var(--shadow-card);
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
+  flex-shrink: 0;
   transition: border-color 0.25s, box-shadow 0.25s;
 }
 
@@ -392,7 +454,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .ww-player-avatar {
@@ -427,17 +489,27 @@ body {
 .ww-walls-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
   font-size: 0.8rem;
+}
+
+.ww-player-meta-inline {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-left: 2px;
+  padding-left: 6px;
+  border-left: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .ww-wall-pills {
   display: flex;
-  gap: 3px;
+  gap: 2px;
 }
 
 .ww-wall-pill {
-  width: 12px;
+  width: 9px;
   height: 6px;
   border-radius: 3px;
   transition: background-color 0.2s;
@@ -456,7 +528,7 @@ body {
 .ww-player-card-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 
 .ww-dist-box {
@@ -478,7 +550,7 @@ body {
 }
 
 .ww-dist-val {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
@@ -504,27 +576,29 @@ body {
 }
 
 .ww-sparkline-svg {
-  width: 120px;
-  height: 26px;
+  width: 100px;
+  height: 22px;
   overflow: visible;
 }
 
 /* Board Card */
 .ww-board-card {
-  width: 100%;
-  max-width: 602px;
+  width: fit-content;
+  max-width: 100%;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 12px;
+  border-radius: 12px;
+  padding: 6px;
   box-shadow: var(--shadow-card);
   display: flex;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 #ww-board-container {
-  width: 100%;
-  max-width: 578px;
+  width: clamp(250px, calc(100vh - 315px), 470px);
+  height: clamp(250px, calc(100vh - 315px), 470px);
+  max-width: 100%;
   aspect-ratio: 1;
 }
 
@@ -652,21 +726,22 @@ body {
 /* Replay Controls Card */
 .ww-controls-card {
   width: 100%;
-  max-width: 602px;
+  max-width: 520px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 14px 18px;
+  border-radius: 10px;
+  padding: 6px 12px;
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .ww-scrubber-wrap {
   position: relative;
   width: 100%;
-  padding-top: 10px;
+  padding-top: 8px;
 }
 
 .ww-scrubber-ticks {
@@ -788,7 +863,9 @@ body {
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
-  height: 670px;
+  height: calc(100vh - 96px);
+  max-height: 700px;
+  min-height: 360px;
   overflow: hidden;
 }
 
@@ -1123,14 +1200,17 @@ kbd {
 }
 
 .ww-live-bar {
+  width: 100%;
+  max-width: 520px;
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-card);
+  border-radius: 10px;
   box-shadow: var(--shadow-card);
-  padding: 12px 16px;
+  padding: 6px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 5px;
+  flex-shrink: 0;
 }
 
 .ww-live-top {
@@ -1358,4 +1438,127 @@ kbd {
   padding: 2px 8px;
   font-size: 0.72rem;
   border-radius: 6px;
+}
+
+/* Separate Bot History Tab */
+.ww-history-tab-panel {
+  gap: 10px;
+  height: calc(100vh - 76px);
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.ww-history-tab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.ww-subtabs {
+  display: inline-flex;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 4px;
+}
+
+.ww-subtab {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.ww-subtab:hover {
+  color: var(--text);
+}
+
+.ww-subtab.ww-subtab-active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.ww-history-tab-status {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.ww-subtab-content {
+  flex: 1;
+  min-height: 0;
+}
+
+.ww-bvb-grid {
+  display: grid;
+  grid-template-columns: minmax(340px, 44%) 1fr;
+  gap: 14px;
+  height: 100%;
+  min-height: 0;
+}
+
+.ww-hvb-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+}
+
+.ww-hvb-split {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.ww-panel-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ww-panel-card-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ww-panel-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 10px 14px;
+}
+
+.ww-lb-row-selected {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+@media (max-width: 980px) {
+  .ww-bvb-grid,
+  .ww-hvb-split {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .ww-history-panel {
+    height: 460px;
+  }
 }

@@ -20,6 +20,8 @@
       this.boardRenderer = boardRenderer;
       this.onFlipChange = options.onFlipChange || null;
       this.onLoadReplayLog = options.onLoadReplayLog || null;
+      this.onOpenBotHistory = options.onOpenBotHistory || null;
+      this.onShowArena = options.onShowArena || null;
 
       this.active = false;
       this.busy = false;
@@ -65,14 +67,7 @@
         btnRematch: document.getElementById('ww-btn-rematch'),
         btnSwapRematch: document.getElementById('ww-btn-swap-rematch'),
         btnLiveStats: document.getElementById('ww-btn-live-stats'),
-        btnExitLive: document.getElementById('ww-btn-exit-live'),
-
-        statsModal: document.getElementById('ww-human-stats-modal'),
-        statsSummary: document.getElementById('ww-human-stats-summary'),
-        statsTableWrap: document.getElementById('ww-human-stats-table-wrap'),
-        historyFilter: document.getElementById('ww-human-history-filter'),
-        historyWrap: document.getElementById('ww-human-history-wrap'),
-        btnResetStats: document.getElementById('ww-btn-reset-human-stats')
+        btnExitLive: document.getElementById('ww-btn-exit-live')
       };
     }
 
@@ -125,12 +120,6 @@
       }
       if (this.el.btnExitLive) {
         this.el.btnExitLive.addEventListener('click', () => this.exitLiveMode());
-      }
-      if (this.el.historyFilter) {
-        this.el.historyFilter.addEventListener('change', () => this._renderStatsModalData(this._lastStatsPayload));
-      }
-      if (this.el.btnResetStats) {
-        this.el.btnResetStats.addEventListener('click', () => this.resetStats());
       }
 
       // If another match log is loaded externally, exit live mode cleanly
@@ -195,10 +184,7 @@
           this.botsCache.forEach(item => {
             const opt = document.createElement('option');
             opt.value = item.name;
-            const h = item.human_stats;
-            const rec = h.games > 0 ? `You ${h.human_wins}W-${h.human_losses}L-${h.draws}D` : '0 games';
-            const ai = item.ai_rank ? ` · AI #${item.ai_rank}` : '';
-            opt.textContent = `${item.name} (${rec}${ai})`;
+            opt.textContent = item.ai_rank ? `${item.name} (AI #${item.ai_rank})` : item.name;
             this.el.botSelect.appendChild(opt);
           });
           if (this.botsCache.some(b => b.name === prev)) {
@@ -226,19 +212,10 @@
         this.el.botPreview.innerHTML = '';
         return;
       }
-      const h = info.human_stats;
       const aiText = info.ai_rank
         ? `AI Leaderboard: <strong>#${info.ai_rank}</strong> (${info.ai_score.toFixed(1)} pts, ${info.ai_win_rate.toFixed(1)}% vs bots)`
         : 'AI Leaderboard: Unranked';
-      this.el.botPreview.innerHTML = `
-        <div>${aiText}</div>
-        <div style="margin-top:4px;">
-          vs Humans (${h.games} games):
-          <strong style="color:var(--p0-primary);">Bot ${h.bot_wins}W</strong> /
-          <strong style="color:var(--p1-primary);">You ${h.human_wins}W</strong> /
-          <span>${h.draws}D</span>
-        </div>
-      `;
+      this.el.botPreview.innerHTML = `<div>${aiText}</div>`;
     }
 
     async startFromModal() {
@@ -288,6 +265,9 @@
       if (this.onFlipChange) {
         this.onFlipChange(humanSide === 1);
       }
+      if (this.onShowArena) {
+        this.onShowArena();
+      }
       this._applySessionData(data);
     }
 
@@ -324,7 +304,10 @@
         }
         this.busy = false;
         this.mode = 'move';
-        this._applySessionData(data);
+        if (this.onShowArena) {
+        this.onShowArena();
+      }
+      this._applySessionData(data);
       } catch (err) {
         this.busy = false;
         this._showLiveError(err.message || 'Network error sending move');
@@ -347,7 +330,10 @@
         const data = await res.json();
         this.busy = false;
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-        this._applySessionData(data);
+        if (this.onShowArena) {
+        this.onShowArena();
+      }
+      this._applySessionData(data);
       } catch (err) {
         this.busy = false;
         this._showLiveError(err.message || 'Error resigning');
@@ -408,10 +394,8 @@
         this.el.controlsCard.style.display = this.session.done ? 'flex' : 'none';
       }
 
-      const br = this.session.bot_record;
-      if (this.el.liveBotRecord && br) {
-        this.el.liveBotRecord.textContent =
-          `${br.bot_name} vs Humans: Bot ${br.bot_wins}W · You ${br.human_wins}W · ${br.draws}D`;
+      if (this.el.liveBotRecord) {
+        this.el.liveBotRecord.textContent = `Opponent: ${this.session.bot_name}`;
       }
 
       if (!this.session.done) {
@@ -492,177 +476,8 @@
     }
 
     async openStatsModal() {
-      if (!this.el.statsModal) return;
-      this.el.statsModal.classList.add('ww-modal-open');
-      if (this.el.statsSummary) this.el.statsSummary.innerHTML = 'Loading records...';
-      try {
-        const res = await fetch('/api/human/stats');
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        this._lastStatsPayload = data;
-        this._populateHistoryFilter(data.bots || []);
-        this._renderStatsModalData(data);
-      } catch (err) {
-        if (this.el.statsSummary) {
-          this.el.statsSummary.innerHTML = '<div class="ww-logs-empty">Start server via <code>python serve.py</code> to view live Human vs Bot records.</div>';
-        }
-        if (this.el.statsTableWrap) this.el.statsTableWrap.innerHTML = '';
-        if (this.el.historyWrap) this.el.historyWrap.innerHTML = '';
-      }
-    }
-
-    _populateHistoryFilter(bots) {
-      if (!this.el.historyFilter) return;
-      const prev = this.el.historyFilter.value;
-      this.el.historyFilter.innerHTML = '<option value="">All Bots</option>';
-      bots.forEach(b => {
-        const opt = document.createElement('option');
-        opt.value = b.bot_name;
-        opt.textContent = b.bot_name;
-        this.el.historyFilter.appendChild(opt);
-      });
-      if (bots.some(b => b.bot_name === prev)) {
-        this.el.historyFilter.value = prev;
-      }
-    }
-
-    _renderStatsModalData(data) {
-      if (!data) return;
-      const bots = data.bots || [];
-      const recent = data.recent_matches || [];
-
-      const totGames = bots.reduce((a, b) => a + b.games, 0);
-      const totBotWins = bots.reduce((a, b) => a + b.bot_wins, 0);
-      const totHumanWins = bots.reduce((a, b) => a + b.human_wins, 0);
-      const totDraws = bots.reduce((a, b) => a + b.draws, 0);
-
-      if (this.el.statsSummary) {
-        this.el.statsSummary.innerHTML = `
-          <div class="ww-stat-pill"><span>Matches Played</span><strong>${totGames}</strong></div>
-          <div class="ww-stat-pill"><span>You Won</span><strong style="color:var(--p1-primary);">${totHumanWins}</strong></div>
-          <div class="ww-stat-pill"><span>Bots Won</span><strong style="color:var(--p0-primary);">${totBotWins}</strong></div>
-          <div class="ww-stat-pill"><span>Draws</span><strong>${totDraws}</strong></div>
-        `;
-      }
-
-      if (this.el.statsTableWrap) {
-        let html = `
-          <table class="ww-summary-table ww-leaderboard-table">
-            <thead>
-              <tr>
-                <th>Bot</th>
-                <th style="text-align:right;">Games</th>
-                <th style="text-align:right;">Bot Wins</th>
-                <th style="text-align:right;">Bot Losses (You W)</th>
-                <th style="text-align:right;">Draws</th>
-                <th style="text-align:right;">Bot Win%</th>
-                <th style="text-align:right;">You Win%</th>
-                <th style="text-align:right;">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-        `;
-        bots.forEach(b => {
-          html += `
-            <tr>
-              <td style="font-weight:600;">${escapeHtml(b.bot_name)}</td>
-              <td style="text-align:right;">${b.games}</td>
-              <td style="text-align:right; color:var(--p0-primary); font-weight:600;">${b.bot_wins}</td>
-              <td style="text-align:right; color:var(--p1-primary); font-weight:600;">${b.bot_losses}</td>
-              <td style="text-align:right;">${b.draws}</td>
-              <td style="text-align:right;">${b.games > 0 ? b.bot_win_rate.toFixed(1) + '%' : '—'}</td>
-              <td style="text-align:right;">${b.games > 0 ? b.human_win_rate.toFixed(1) + '%' : '—'}</td>
-              <td style="text-align:right;">
-                <button class="ww-btn ww-btn-sm ww-btn-quick-play" data-bot="${escapeHtml(b.bot_name)}">⚔ Play</button>
-              </td>
-            </tr>
-          `;
-        });
-        html += '</tbody></table>';
-        this.el.statsTableWrap.innerHTML = html;
-
-        this.el.statsTableWrap.querySelectorAll('.ww-btn-quick-play').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const botName = btn.getAttribute('data-bot');
-            this.el.statsModal.classList.remove('ww-modal-open');
-            this.openPlayModal(botName);
-          });
-        });
-      }
-
-      if (this.el.historyWrap) {
-        const filterBot = this.el.historyFilter ? this.el.historyFilter.value : '';
-        const filtered = filterBot ? recent.filter(m => m.bot_name === filterBot) : recent;
-        if (!filtered.length) {
-          this.el.historyWrap.innerHTML = '<div class="ww-logs-empty">No Human vs Bot matches recorded yet.</div>';
-          return;
-        }
-        let html = `
-          <table class="ww-summary-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Player</th>
-                <th>Bot</th>
-                <th>Side</th>
-                <th>Result (You / Bot)</th>
-                <th style="text-align:right;">Turns</th>
-                <th>Reason</th>
-                <th style="text-align:right;">Replay</th>
-              </tr>
-            </thead>
-            <tbody>
-        `;
-        filtered.forEach(m => {
-          const sideTxt = m.human_side === 0 ? 'P0 (Red)' : 'P1 (Blue)';
-          const badge = m.outcome_for_human === 'win'
-            ? '<span class="ww-outcome-pill ww-outcome-win">YOU WON / BOT LOST</span>'
-            : (m.outcome_for_human === 'loss'
-              ? '<span class="ww-outcome-pill ww-outcome-loss">BOT WON / YOU LOST</span>'
-              : '<span class="ww-outcome-pill ww-outcome-draw">DRAW</span>');
-          const replayBtn = m.log_path
-            ? `<button class="ww-btn ww-btn-sm ww-btn-load-human-replay" data-log="${escapeHtml(m.log_path)}">📂 View</button>`
-            : '—';
-          html += `
-            <tr>
-              <td style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml((m.played_at || '').slice(0, 19))}</td>
-              <td>${escapeHtml(m.human_name)}</td>
-              <td style="font-weight:600;">${escapeHtml(m.bot_name)}</td>
-              <td>${sideTxt}</td>
-              <td>${badge}</td>
-              <td style="text-align:right;">${m.turns}</td>
-              <td>${escapeHtml(m.reason || '')}</td>
-              <td style="text-align:right;">${replayBtn}</td>
-            </tr>
-          `;
-        });
-        html += '</tbody></table>';
-        this.el.historyWrap.innerHTML = html;
-
-        this.el.historyWrap.querySelectorAll('.ww-btn-load-human-replay').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const logPath = btn.getAttribute('data-log');
-            this.el.statsModal.classList.remove('ww-modal-open');
-            this.exitLiveMode();
-            if (this.onLoadReplayLog) {
-              this.onLoadReplayLog(logPath);
-            }
-          });
-        });
-      }
-    }
-
-    async resetStats() {
-      if (!window.confirm('Clear all recorded Human vs Bot win/loss match history?')) {
-        return;
-      }
-      const res = await fetch('/api/human/stats/reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: '{}'
-      });
-      if (res.ok) {
-        await this.openStatsModal();
+      if (this.onOpenBotHistory) {
+        this.onOpenBotHistory();
       }
     }
   }

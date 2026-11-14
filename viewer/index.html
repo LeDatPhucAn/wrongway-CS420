@@ -13,8 +13,16 @@
     <div class="ww-header-left">
       <div class="ww-logo">
         <span>Wrongway</span>
-        <span class="ww-logo-badge">Replay</span>
+        <span class="ww-logo-badge">Arena</span>
       </div>
+      <nav class="ww-nav-tabs" aria-label="Primary Views">
+        <button class="ww-nav-tab ww-nav-tab-active" id="ww-tab-btn-arena" data-tab="arena">
+          🎮 Arena
+        </button>
+        <button class="ww-nav-tab" id="ww-tab-btn-history" data-tab="history">
+          📊 Bot History
+        </button>
+      </nav>
     </div>
 
     <div class="ww-header-center">
@@ -29,12 +37,6 @@
     <div class="ww-header-right">
       <button class="ww-btn ww-btn-primary" id="ww-btn-play-bot" title="Play interactively against any bot">
         ⚔ Play vs Bot
-      </button>
-      <button class="ww-btn" id="ww-btn-human-stats" title="View Human vs Bot Win/Loss Records">
-        📊 Human Stats
-      </button>
-      <button class="ww-btn" id="ww-btn-leaderboard" title="View TrueSkill Leaderboard">
-        🏆 Leaderboard
       </button>
       <button class="ww-btn" id="ww-btn-logs" title="Choose a log from logs/ folder">
         📂 Open Log
@@ -96,23 +98,26 @@
   <!-- Main Container -->
   <main class="ww-main">
 
-    <!-- Empty State -->
-    <div id="ww-empty-state" class="ww-empty-state">
-      <div class="ww-empty-icon">🎮</div>
-      <h2>Wrongway Arena &amp; Replay Viewer</h2>
-      <div class="ww-empty-cta-row">
-        <button class="ww-btn ww-btn-primary" id="ww-btn-empty-play">⚔ Play Human vs Bot</button>
-        <button class="ww-btn" id="ww-btn-empty-human-stats">📊 View Per-Bot W/L Records</button>
-      </div>
-      <p>Or select a match log from the <code>logs/</code> directory:</p>
-      <div id="ww-empty-logs-list" class="ww-empty-logs-list"></div>
-      <div class="ww-empty-hint">
-        Generate more logs via: <code>python arena.py -p1 greedy -p2 wall_builder --log logs/demo.json</code>
-      </div>
-    </div>
+    <!-- Tab 1: Arena / Match View -->
+    <div id="ww-arena-tab-panel" class="ww-tab-panel">
 
-    <!-- Main Active View -->
-    <div id="ww-main-view" class="ww-main-view" style="display:none;">
+      <!-- Empty State -->
+      <div id="ww-empty-state" class="ww-empty-state">
+        <div class="ww-empty-icon">🎮</div>
+        <h2>Wrongway Arena &amp; Replay Viewer</h2>
+        <div class="ww-empty-cta-row">
+          <button class="ww-btn ww-btn-primary" id="ww-btn-empty-play">⚔ Play Human vs Bot</button>
+          <button class="ww-btn" id="ww-btn-empty-human-stats">📊 View Bot History &amp; Records</button>
+        </div>
+        <p>Or select a match log from the <code>logs/</code> directory:</p>
+        <div id="ww-empty-logs-list" class="ww-empty-logs-list"></div>
+        <div class="ww-empty-hint">
+          Generate more logs via: <code>python arena.py -p1 greedy -p2 wall_builder --log logs/demo.json</code>
+        </div>
+      </div>
+
+      <!-- Main Active View -->
+      <div id="ww-main-view" class="ww-main-view" style="display:none;">
 
       <!-- Left Column: Board & Cards -->
       <div class="ww-board-column">
@@ -128,9 +133,7 @@
             <div class="ww-walls-row">
               <div class="ww-wall-pills"></div>
               <span class="ww-walls-count">10 / 10</span>
-            </div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
-              OK: <span class="ww-stat-ok">0</span> · Pass: <span class="ww-stat-pass">0</span> · Issues: <span class="ww-stat-issues">0</span>
+              <span class="ww-player-meta-inline">OK: <span class="ww-stat-ok">0</span> · Pass: <span class="ww-stat-pass">0</span> · Issues: <span class="ww-stat-issues">0</span></span>
             </div>
           </div>
           <div class="ww-player-card-right">
@@ -164,9 +167,7 @@
             <div class="ww-walls-row">
               <div class="ww-wall-pills"></div>
               <span class="ww-walls-count">10 / 10</span>
-            </div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
-              OK: <span class="ww-stat-ok">0</span> · Pass: <span class="ww-stat-pass">0</span> · Issues: <span class="ww-stat-issues">0</span>
+              <span class="ww-player-meta-inline">OK: <span class="ww-stat-ok">0</span> · Pass: <span class="ww-stat-pass">0</span> · Issues: <span class="ww-stat-issues">0</span></span>
             </div>
           </div>
           <div class="ww-player-card-right">
@@ -196,22 +197,22 @@
 
           <div id="ww-live-active-controls" class="ww-live-actions-row">
             <div class="ww-btn-group">
-              <button class="ww-btn ww-mode-btn ww-mode-active" id="ww-mode-move" data-mode="move" title="Click highlighted cell to move (Key: 1)">
+              <button class="ww-btn ww-btn-sm ww-mode-btn ww-mode-active" id="ww-mode-move" data-mode="move" title="Click highlighted cell to move (Key: 1)">
                 🚶 Move
               </button>
-              <button class="ww-btn ww-mode-btn" id="ww-mode-h" data-mode="H" title="Place Horizontal wall (Key: 2)">
+              <button class="ww-btn ww-btn-sm ww-mode-btn" id="ww-mode-h" data-mode="H" title="Place Horizontal wall (Key: 2)">
                 ➖ H Wall
               </button>
-              <button class="ww-btn ww-mode-btn" id="ww-mode-v" data-mode="V" title="Place Vertical wall (Key: 3)">
+              <button class="ww-btn ww-btn-sm ww-mode-btn" id="ww-mode-v" data-mode="V" title="Place Vertical wall (Key: 3)">
                 │ V Wall
               </button>
               <button class="ww-btn ww-btn-sm" id="ww-btn-flip-wall" title="Toggle H/V orientation (Key: R / Right-click)">
-                ↻ Flip H/V
+                ↻ Flip
               </button>
             </div>
             <div class="ww-btn-group">
-              <button class="ww-btn ww-btn-danger-outline ww-btn-sm" id="ww-btn-resign" title="Resign current match (records bot win)">
-                🏳 Resign
+              <button class="ww-btn ww-btn-danger-outline ww-btn-sm" id="ww-btn-resign" title="Stop &amp; resign current match (records bot win)">
+                🛑 Stop / Resign
               </button>
             </div>
           </div>
@@ -220,9 +221,9 @@
             <div id="ww-live-result-banner" class="ww-live-result-banner"></div>
             <div class="ww-btn-group">
               <button class="ww-btn ww-btn-primary ww-btn-sm" id="ww-btn-rematch">🔄 Rematch</button>
-              <button class="ww-btn ww-btn-sm" id="ww-btn-swap-rematch">🔁 Swap Sides</button>
-              <button class="ww-btn ww-btn-sm" id="ww-btn-live-stats">📊 All Bot Records</button>
-              <button class="ww-btn ww-btn-sm" id="ww-btn-exit-live">🎞 Replay Controls</button>
+              <button class="ww-btn ww-btn-sm" id="ww-btn-swap-rematch">🔁 Swap</button>
+              <button class="ww-btn ww-btn-sm" id="ww-btn-live-stats">📊 Bot History</button>
+              <button class="ww-btn ww-btn-sm" id="ww-btn-exit-live">🎞 Replay</button>
             </div>
           </div>
         </div>
@@ -282,6 +283,33 @@
         <div id="ww-move-list" class="ww-move-list"></div>
       </div>
 
+    </div>
+
+    </div><!-- /#ww-arena-tab-panel -->
+
+    <!-- Tab 2: Bot History (Bot vs Bot Leaderboard & Head-to-Head Matches) -->
+    <div id="ww-history-tab-panel" class="ww-tab-panel ww-history-tab-panel" style="display:none;">
+      <div class="ww-history-tab-bar">
+        <strong style="font-size:0.95rem;">🏆 Bot vs Bot Standings &amp; Match History</strong>
+        <div id="ww-history-tab-status" class="ww-history-tab-status"></div>
+      </div>
+
+      <div id="ww-bvb-grid" class="ww-subtab-content ww-bvb-grid">
+        <section class="ww-panel-card ww-bvb-left">
+          <div class="ww-panel-card-header">
+            <strong>TrueSkill Leaderboard</strong>
+            <button class="ww-btn ww-btn-xs" id="ww-btn-refresh-leaderboard" title="Refresh rankings">↻</button>
+          </div>
+          <div id="ww-leaderboard-table-wrap" class="ww-panel-scroll"></div>
+        </section>
+        <section class="ww-panel-card ww-bvb-right">
+          <div class="ww-panel-card-header">
+            <strong id="ww-bvb-detail-title">Bot vs Bot Head-to-Head &amp; Matches</strong>
+            <span style="font-size:0.75rem; color:var(--text-muted);" id="ww-leaderboard-status">Select a bot</span>
+          </div>
+          <div id="ww-bot-detail-wrap" class="ww-panel-scroll"></div>
+        </section>
+      </div>
     </div>
 
   </main>
@@ -350,20 +378,6 @@
     </div>
   </div>
 
-  <!-- Leaderboard Modal -->
-  <div id="ww-leaderboard-modal" class="ww-modal">
-    <div class="ww-modal-card" style="max-width: 920px;">
-      <div class="ww-modal-header">
-        <div class="ww-modal-title">🏆 Agent Leaderboard &amp; Bot vs Bot Records</div>
-        <button class="ww-modal-close">&times;</button>
-      </div>
-      <div class="ww-modal-body">
-        <div id="ww-leaderboard-status" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;"></div>
-        <div id="ww-leaderboard-table-wrap"></div>
-      </div>
-    </div>
-  </div>
-
   <!-- Tournament Summary Modal -->
   <div id="ww-tournament-modal" class="ww-modal">
     <div class="ww-modal-card" style="max-width: 960px;">
@@ -377,7 +391,7 @@
 
   <!-- Play vs Bot Modal -->
   <div id="ww-play-bot-modal" class="ww-modal">
-    <div class="ww-modal-card" style="max-width: 580px;">
+    <div class="ww-modal-card" style="max-width: 540px;">
       <div class="ww-modal-header">
         <div class="ww-modal-title">⚔ Start Human vs Bot Match</div>
         <button class="ww-modal-close">&times;</button>
@@ -410,30 +424,6 @@
           <button class="ww-btn" id="ww-btn-cancel-play">Cancel</button>
           <button class="ww-btn ww-btn-primary" id="ww-btn-start-play">▶ Start Match</button>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Human vs Bot Stats Modal -->
-  <div id="ww-human-stats-modal" class="ww-modal">
-    <div class="ww-modal-card" style="max-width: 880px;">
-      <div class="ww-modal-header">
-        <div class="ww-modal-title">📊 Human vs Bot Match Records (Per Bot)</div>
-        <button class="ww-modal-close">&times;</button>
-      </div>
-      <div class="ww-modal-body">
-        <div id="ww-human-stats-summary" class="ww-human-stats-summary"></div>
-        <div id="ww-human-stats-table-wrap" style="overflow-x:auto;"></div>
-        <div class="ww-human-history-header">
-          <h4 style="margin:0;">Recent Human Matches</h4>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <select id="ww-human-history-filter" class="ww-select">
-              <option value="">All Bots</option>
-            </select>
-            <button class="ww-btn ww-btn-sm ww-btn-danger-outline" id="ww-btn-reset-human-stats">Reset Records</button>
-          </div>
-        </div>
-        <div id="ww-human-history-wrap" style="overflow-x:auto; max-height:240px;"></div>
       </div>
     </div>
   </div>

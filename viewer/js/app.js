@@ -67,11 +67,39 @@
       nextMatchBtn: document.getElementById('ww-btn-next-match')
     });
 
-    // 6. Connect Board to Controller events
+    // 6. Tab Navigation (Arena vs Separate Bot History Tab)
+    const arenaTabPanel = document.getElementById('ww-arena-tab-panel');
+    const historyTabPanel = document.getElementById('ww-history-tab-panel');
+    const tabBtnArena = document.getElementById('ww-tab-btn-arena');
+    const tabBtnHistory = document.getElementById('ww-tab-btn-history');
+    const seriesBar = document.getElementById('ww-series-bar');
+
+    let currentMainTab = 'arena';
+    let selectedBotName = null;
+
+    function switchMainTab(tab) {
+      currentMainTab = tab === 'history' ? 'history' : 'arena';
+      if (arenaTabPanel) arenaTabPanel.style.display = currentMainTab === 'arena' ? 'flex' : 'none';
+      if (historyTabPanel) historyTabPanel.style.display = currentMainTab === 'history' ? 'flex' : 'none';
+      if (tabBtnArena) tabBtnArena.classList.toggle('ww-nav-tab-active', currentMainTab === 'arena');
+      if (tabBtnHistory) tabBtnHistory.classList.toggle('ww-nav-tab-active', currentMainTab === 'history');
+      if (seriesBar) {
+        seriesBar.style.display = (currentMainTab === 'arena' && controller.seriesMatches && controller.seriesMatches.length > 1) ? 'flex' : 'none';
+      }
+      if (currentMainTab === 'history') {
+        loadLeaderboard();
+      }
+    }
+
+    if (tabBtnArena) tabBtnArena.addEventListener('click', () => switchMainTab('arena'));
+    if (tabBtnHistory) tabBtnHistory.addEventListener('click', () => switchMainTab('history'));
+
+    // Connect Board to Controller events
     controller.on('load', () => {
       boardRenderer.setWallOwners(controller.wallOwners);
       document.getElementById('ww-empty-state').style.display = 'none';
       document.getElementById('ww-main-view').style.display = 'grid';
+      switchMainTab('arena');
     });
 
     controller.on('change', (currIdx, prevIdx, state, turnRecord) => {
@@ -150,7 +178,11 @@
               applyViewOptions();
             }
           },
-          onLoadReplayLog: (logPath) => loader.fetchAndLoadLog(logPath)
+          onLoadReplayLog: (logPath) => loader.fetchAndLoadLog(logPath),
+          onOpenBotHistory: () => {
+            switchMainTab('history');
+          },
+          onShowArena: () => switchMainTab('arena')
         })
       : null;
 
@@ -175,11 +207,13 @@
       });
     });
 
-    // Leaderboard modal button & fetch (with Bot-vs-Bot per-opponent W/D/L drill-down)
-    const lbBtn = document.getElementById('ww-btn-leaderboard');
-    const lbModal = document.getElementById('ww-leaderboard-modal');
+    // Bot History Tab: Leaderboard + Bot-vs-Bot per-opponent W/D/L drill-down
     const lbWrap = document.getElementById('ww-leaderboard-table-wrap');
     const lbStatus = document.getElementById('ww-leaderboard-status');
+    const detailWrap = document.getElementById('ww-bot-detail-wrap');
+    const detailTitle = document.getElementById('ww-bvb-detail-title');
+    const historyTabStatus = document.getElementById('ww-history-tab-status');
+    const refreshLbBtn = document.getElementById('ww-btn-refresh-leaderboard');
 
     function escapeHtml(value) {
       return String(value == null ? '' : value)
@@ -192,7 +226,7 @@
 
     function openSeriesReplay(relPath) {
       if (!relPath) return;
-      if (lbModal) lbModal.classList.remove('ww-modal-open');
+      switchMainTab('arena');
       loader.fetchAndLoadLog(relPath);
     }
 
@@ -207,12 +241,22 @@
       return `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
     }
 
-    function loadAgentDetail(agentName, filterOpponent = '') {
+    function highlightSelectedLeaderboardRow(agentName) {
       if (!lbWrap) return;
+      lbWrap.querySelectorAll('tr[data-agent-row]').forEach(tr => {
+        tr.classList.toggle('ww-lb-row-selected', tr.getAttribute('data-agent-row') === agentName);
+      });
+    }
+
+    function loadAgentDetail(agentName, filterOpponent = '') {
+      if (!detailWrap || !agentName) return;
+      selectedBotName = agentName;
+      highlightSelectedLeaderboardRow(agentName);
+      if (detailTitle) detailTitle.textContent = `🤖 ${agentName} — vs Other Bots`;
       if (lbStatus) {
         lbStatus.textContent = filterOpponent
-          ? `Loading ${agentName} vs ${filterOpponent} matches...`
-          : `Loading bot-vs-bot record for ${agentName}...`;
+          ? `Loading ${agentName} vs ${filterOpponent}...`
+          : `Loading ${agentName} records...`;
       }
       const query = filterOpponent
         ? `?opponent=${encodeURIComponent(filterOpponent)}&limit=200`
@@ -237,17 +281,10 @@
           const avgTurns = nGames > 0 ? (Number(ag.total_turns || 0) / nGames).toFixed(1) : '0.0';
 
           if (lbStatus) {
-            lbStatus.textContent = `${agentName}: ${wins}W / ${draws}D / ${losses}L across ${h2h.length} bot opponent${h2h.length === 1 ? '' : 's'}.`;
+            lbStatus.textContent = `${wins}W / ${draws}D / ${losses}L across ${h2h.length} bot opponent${h2h.length === 1 ? '' : 's'}`;
           }
 
           let html = `
-            <div class="ww-agent-detail-header">
-              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                <button class="ww-btn ww-btn-xs" id="ww-lb-back-btn">← All Bots</button>
-                <strong style="font-size:1.05rem;">🤖 ${escapeHtml(agentName)}</strong>
-              </div>
-              <span style="font-size:0.78rem; color:var(--text-muted);">Bot vs Bot Tournament &amp; Arena Matches</span>
-            </div>
             <div class="ww-agent-stat-grid">
               <div class="ww-stat-pill"><span>TrueSkill (μ-3σ)</span><strong style="color:var(--accent);">${ratingScore.toFixed(2)}</strong></div>
               <div class="ww-stat-pill"><span>Skill μ / σ</span><strong>${mu.toFixed(1)} <small style="font-weight:400; color:var(--text-muted);">±${sigma.toFixed(2)}</small></strong></div>
@@ -256,7 +293,7 @@
               <div class="ww-stat-pill"><span>Avg Turns</span><strong>${avgTurns}</strong></div>
             </div>
 
-            <div class="ww-human-history-header" style="margin-top:8px;">
+            <div class="ww-human-history-header" style="margin-top:6px;">
               <strong>Head-to-Head vs Other Bots</strong>
               <span style="font-size:0.74rem; color:var(--text-muted);">Click an opponent to filter matches</span>
             </div>
@@ -328,7 +365,7 @@
             html += '<div class="ww-logs-empty">No individual matches recorded yet.</div>';
           } else {
             html += `
-              <div style="max-height:260px; overflow-y:auto; border:1px solid var(--border); border-radius:8px;">
+              <div style="border:1px solid var(--border); border-radius:8px; overflow-x:auto;">
                 <table class="ww-summary-table ww-leaderboard-table">
                   <thead>
                     <tr>
@@ -368,10 +405,7 @@
             html += '</tbody></table></div>';
           }
 
-          lbWrap.innerHTML = html;
-
-          const backBtn = document.getElementById('ww-lb-back-btn');
-          if (backBtn) backBtn.addEventListener('click', () => loadLeaderboard());
+          detailWrap.innerHTML = html;
 
           const clearBtn = document.getElementById('ww-lb-clear-filter');
           if (clearBtn) clearBtn.addEventListener('click', () => loadAgentDetail(agentName, ''));
@@ -383,14 +417,14 @@
             });
           }
 
-          lbWrap.querySelectorAll('.ww-lb-filter-btn').forEach(btn => {
+          detailWrap.querySelectorAll('.ww-lb-filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
               const opp = btn.getAttribute('data-opp') || '';
               loadAgentDetail(agentName, filterOpponent === opp ? '' : opp);
             });
           });
 
-          lbWrap.querySelectorAll('.ww-lb-replay-btn').forEach(btn => {
+          detailWrap.querySelectorAll('.ww-lb-replay-btn').forEach(btn => {
             btn.addEventListener('click', () => {
               openSeriesReplay(btn.getAttribute('data-log'));
             });
@@ -403,7 +437,7 @@
 
     function loadLeaderboard() {
       if (!lbWrap) return;
-      if (lbStatus) lbStatus.textContent = 'Fetching current rankings...';
+      if (historyTabStatus) historyTabStatus.textContent = 'Fetching rankings...';
       fetch('/api/leaderboard')
         .then(res => {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -411,24 +445,23 @@
         })
         .then(data => {
           if (!data || !data.length) {
-            if (lbStatus) lbStatus.textContent = 'No agents ranked yet in ranking.db.';
-            lbWrap.innerHTML = '<div class="ww-logs-empty">Play matches with arena.py or series.py to establish ratings.</div>';
+            if (historyTabStatus) historyTabStatus.textContent = 'No agents ranked yet in ranking.db.';
+            lbWrap.innerHTML = '<div class="ww-logs-empty">Play matches with arena.py or tournament.py to establish ratings.</div>';
+            if (detailWrap) detailWrap.innerHTML = '<div class="ww-logs-empty">No bot match history recorded yet.</div>';
             return;
           }
-          if (lbStatus) lbStatus.textContent = `${data.length} agents ranked. Click any bot to inspect its W/D/L records against every other bot.`;
+          if (historyTabStatus) {
+            historyTabStatus.textContent = `${data.length} ranked bots · Click any bot to inspect its W/D/L vs every other bot`;
+          }
           let html = `
             <table class="ww-summary-table ww-leaderboard-table">
               <thead>
                 <tr>
-                  <th>Rank</th>
+                  <th>#</th>
                   <th>Agent</th>
-                  <th style="text-align:right;">Score (μ - 3σ)</th>
-                  <th style="text-align:right;">Skill μ</th>
-                  <th style="text-align:right;">Uncertainty σ</th>
+                  <th style="text-align:right;">Score</th>
                   <th style="text-align:center;">W / D / L</th>
                   <th style="text-align:right;">Win %</th>
-                  <th style="text-align:right;">Avg Turns</th>
-                  <th style="text-align:right;">vs Bots</th>
                 </tr>
               </thead>
               <tbody>
@@ -436,44 +469,40 @@
           data.forEach(entry => {
             const rankBadge = entry.rank === 1 ? '🥇 #1' : (entry.rank === 2 ? '🥈 #2' : (entry.rank === 3 ? '🥉 #3' : `#${entry.rank}`));
             html += `
-              <tr>
-                <td style="font-weight:700;">${rankBadge}</td>
+              <tr data-agent-row="${escapeHtml(entry.name)}" style="cursor:pointer;">
+                <td style="font-weight:700; white-space:nowrap;">${rankBadge}</td>
                 <td>
                   <button class="ww-lb-row-btn ww-lb-agent-btn" data-agent="${escapeHtml(entry.name)}">${escapeHtml(entry.name)}</button>
                 </td>
-                <td style="text-align:right; font-weight:700; color:var(--accent);">${entry.score.toFixed(2)}</td>
-                <td style="text-align:right; color:var(--text-muted);">${entry.mu.toFixed(2)}</td>
-                <td style="text-align:right; color:var(--text-subtle);">${entry.sigma.toFixed(2)}</td>
-                <td style="text-align:center;">${entry.wins} / ${entry.draws} / ${entry.losses}</td>
+                <td style="text-align:right; font-weight:700; color:var(--accent);">${entry.score.toFixed(1)}</td>
+                <td style="text-align:center; white-space:nowrap;">${entry.wins}/${entry.draws}/${entry.losses}</td>
                 <td style="text-align:right;">${entry.win_rate.toFixed(1)}%</td>
-                <td style="text-align:right; color:var(--text-muted);">${entry.avg_turns.toFixed(1)}</td>
-                <td style="text-align:right;">
-                  <button class="ww-btn ww-btn-xs ww-lb-agent-btn" data-agent="${escapeHtml(entry.name)}">Details</button>
-                </td>
               </tr>
             `;
           });
           html += '</tbody></table>';
           lbWrap.innerHTML = html;
 
-          lbWrap.querySelectorAll('.ww-lb-agent-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-              const name = btn.getAttribute('data-agent');
+          lbWrap.querySelectorAll('tr[data-agent-row]').forEach(row => {
+            row.addEventListener('click', () => {
+              const name = row.getAttribute('data-agent-row');
               if (name) loadAgentDetail(name);
             });
           });
+
+          const initialBot = (selectedBotName && data.some(d => d.name === selectedBotName))
+            ? selectedBotName
+            : data[0].name;
+          loadAgentDetail(initialBot);
         })
         .catch(() => {
-          if (lbStatus) lbStatus.textContent = 'API unavailable (offline or file:// mode).';
+          if (historyTabStatus) historyTabStatus.textContent = 'API unavailable (offline or file:// mode).';
           lbWrap.innerHTML = '<div class="ww-logs-empty">Start server via <code>python serve.py</code> to view live rankings.</div>';
         });
     }
 
-    if (lbBtn && lbModal) {
-      lbBtn.addEventListener('click', () => {
-        lbModal.classList.add('ww-modal-open');
-        loadLeaderboard();
-      });
+    if (refreshLbBtn) {
+      refreshLbBtn.addEventListener('click', () => loadLeaderboard());
     }
 
     // Shortcuts modal button
