@@ -91,7 +91,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.093,
+          "elapsed": 0.094,
           "state": {
             "board_size": 9,
             "positions": [
@@ -137,7 +137,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -183,7 +183,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.109,
+          "elapsed": 0.125,
           "state": {
             "board_size": 9,
             "positions": [
@@ -275,7 +275,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.11,
           "state": {
             "board_size": 9,
             "positions": [
@@ -412,7 +412,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -463,7 +463,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.062,
+          "elapsed": 0.079,
           "state": {
             "board_size": 9,
             "positions": [
@@ -670,7 +670,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -780,7 +780,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1042,7 +1042,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1088,7 +1088,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.109,
+          "elapsed": 0.11,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1180,7 +1180,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.094,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1318,7 +1318,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1364,7 +1364,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.093,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1410,7 +1410,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1456,7 +1456,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.078,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1502,7 +1502,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1806,7 +1806,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.093,
+          "elapsed": 0.125,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1851,7 +1851,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2004,7 +2004,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.11,
+          "elapsed": 0.094,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2313,7 +2313,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.093,
+          "elapsed": 0.094,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2423,7 +2423,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2533,7 +2533,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2749,7 +2749,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.14,
+          "elapsed": 0.109,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2795,7 +2795,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2841,7 +2841,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.11,
+          "elapsed": 0.078,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2933,7 +2933,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.109,
+          "elapsed": 0.11,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2979,7 +2979,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3071,7 +3071,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3117,7 +3117,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.078,
+          "elapsed": 0.11,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3162,7 +3162,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3213,7 +3213,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.078,
+          "elapsed": 0.11,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3264,7 +3264,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3315,7 +3315,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3593,7 +3593,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.109,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3689,7 +3689,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.093,
+          "elapsed": 0.11,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3795,7 +3795,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.078,
+          "elapsed": 0.11,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3851,7 +3851,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4075,7 +4075,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4131,7 +4131,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.078,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4186,7 +4186,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4246,7 +4246,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [

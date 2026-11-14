@@ -24,6 +24,7 @@
       this.prevState = null;
       this.currentTurnRecord = null;
       this.wallOwners = new Map(); // key "H:r:c" -> player id
+      this.interactiveConfig = null;
 
       this._initSVG();
     }
@@ -95,6 +96,9 @@
       this.pawnsLayer = document.createElementNS(SVG_NS, 'g');
       this.pawnsLayer.setAttribute('class', 'ww-pawns-layer');
 
+      this.interactiveLayer = document.createElementNS(SVG_NS, 'g');
+      this.interactiveLayer.setAttribute('class', 'ww-interactive-layer');
+
       this.boardGroup.appendChild(this.coordsLayer);
       this.boardGroup.appendChild(this.goalTintsLayer);
       this.boardGroup.appendChild(this.cellsLayer);
@@ -103,12 +107,24 @@
       this.boardGroup.appendChild(this.lastMoveLayer);
       this.boardGroup.appendChild(this.wallsLayer);
       this.boardGroup.appendChild(this.pawnsLayer);
+      this.boardGroup.appendChild(this.interactiveLayer);
 
       svg.appendChild(this.boardGroup);
+      svg.addEventListener('contextmenu', (e) => {
+        if (this.interactiveConfig && this.interactiveConfig.enabled && this.interactiveConfig.onToggleOrientation) {
+          e.preventDefault();
+          this.interactiveConfig.onToggleOrientation();
+        }
+      });
       this.container.appendChild(svg);
       this.svg = svg;
 
       this._renderStaticBoard();
+    }
+
+    setInteractive(config) {
+      this.interactiveConfig = config || null;
+      this._renderInteractive();
     }
 
     setOptions(newOptions) {
@@ -229,6 +245,91 @@
       this._renderLastMove(state, prevState, turnRecord);
       this._renderWalls(state, prevState, turnRecord);
       this._renderPawns(state, prevState, turnRecord);
+      this._renderInteractive();
+    }
+
+    _renderInteractive() {
+      if (!this.interactiveLayer) return;
+      this.interactiveLayer.innerHTML = '';
+
+      const cfg = this.interactiveConfig;
+      if (!cfg || !cfg.enabled || cfg.busy) return;
+
+      const mode = cfg.mode || 'move';
+      if (mode === 'move') {
+        const moves = cfg.legalMoves || [];
+        for (let i = 0; i < moves.length; i++) {
+          const [r, c] = moves[i];
+          const cellXY = geometry.cellToXY(r, c);
+          const { cx, cy } = geometry.centerOfCell(r, c);
+
+          const g = document.createElementNS(SVG_NS, 'g');
+          g.setAttribute('class', 'ww-move-target');
+
+          const hit = document.createElementNS(SVG_NS, 'rect');
+          hit.setAttribute('x', cellXY.x);
+          hit.setAttribute('y', cellXY.y);
+          hit.setAttribute('width', cellXY.size);
+          hit.setAttribute('height', cellXY.size);
+          hit.setAttribute('rx', 6);
+          hit.setAttribute('class', 'ww-move-target-hit');
+
+          const ring = document.createElementNS(SVG_NS, 'circle');
+          ring.setAttribute('cx', cx);
+          ring.setAttribute('cy', cy);
+          ring.setAttribute('r', geometry.CELL_SIZE * 0.28);
+          ring.setAttribute('class', 'ww-move-target-ring');
+
+          const dot = document.createElementNS(SVG_NS, 'circle');
+          dot.setAttribute('cx', cx);
+          dot.setAttribute('cy', cy);
+          dot.setAttribute('r', 5);
+          dot.setAttribute('class', 'ww-move-target-dot');
+
+          g.appendChild(hit);
+          g.appendChild(ring);
+          g.appendChild(dot);
+          g.addEventListener('click', () => {
+            if (cfg.onMove) cfg.onMove([r, c]);
+          });
+          this.interactiveLayer.appendChild(g);
+        }
+      } else if (mode === 'H' || mode === 'V') {
+        const walls = cfg.legalWalls || [];
+        for (let i = 0; i < walls.length; i++) {
+          const w = walls[i];
+          if (w.orientation !== mode) continue;
+
+          const rect = geometry.wallToRect(mode, w.row, w.col);
+          const g = document.createElementNS(SVG_NS, 'g');
+          g.setAttribute('class', 'ww-wall-slot');
+
+          const preview = document.createElementNS(SVG_NS, 'rect');
+          preview.setAttribute('x', rect.x);
+          preview.setAttribute('y', rect.y);
+          preview.setAttribute('width', rect.width);
+          preview.setAttribute('height', rect.height);
+          preview.setAttribute('rx', rect.rx);
+          preview.setAttribute('class', 'ww-wall-ghost');
+
+          // Slightly expanded hit area for effortless clicking
+          const hitPad = 4;
+          const hit = document.createElementNS(SVG_NS, 'rect');
+          hit.setAttribute('x', rect.x - (mode === 'V' ? hitPad : 0));
+          hit.setAttribute('y', rect.y - (mode === 'H' ? hitPad : 0));
+          hit.setAttribute('width', rect.width + (mode === 'V' ? hitPad * 2 : 0));
+          hit.setAttribute('height', rect.height + (mode === 'H' ? hitPad * 2 : 0));
+          hit.setAttribute('fill', 'transparent');
+          hit.setAttribute('class', 'ww-wall-hit');
+
+          g.appendChild(preview);
+          g.appendChild(hit);
+          g.addEventListener('click', () => {
+            if (cfg.onWall) cfg.onWall({ orientation: mode, row: w.row, col: w.col });
+          });
+          this.interactiveLayer.appendChild(g);
+        }
+      }
     }
 
     _renderHeatmap(state) {

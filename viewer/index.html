@@ -27,10 +27,16 @@
     </div>
 
     <div class="ww-header-right">
+      <button class="ww-btn ww-btn-primary" id="ww-btn-play-bot" title="Play interactively against any bot">
+        ⚔ Play vs Bot
+      </button>
+      <button class="ww-btn" id="ww-btn-human-stats" title="View Human vs Bot Win/Loss Records">
+        📊 Human Stats
+      </button>
       <button class="ww-btn" id="ww-btn-leaderboard" title="View TrueSkill Leaderboard">
         🏆 Leaderboard
       </button>
-      <button class="ww-btn ww-btn-primary" id="ww-btn-logs" title="Choose a log from logs/ folder">
+      <button class="ww-btn" id="ww-btn-logs" title="Choose a log from logs/ folder">
         📂 Open Log
       </button>
 
@@ -93,8 +99,12 @@
     <!-- Empty State -->
     <div id="ww-empty-state" class="ww-empty-state">
       <div class="ww-empty-icon">🎮</div>
-      <h2>Wrongway Replay Viewer</h2>
-      <p>Select a match log from the <code>logs/</code> directory:</p>
+      <h2>Wrongway Arena &amp; Replay Viewer</h2>
+      <div class="ww-empty-cta-row">
+        <button class="ww-btn ww-btn-primary" id="ww-btn-empty-play">⚔ Play Human vs Bot</button>
+        <button class="ww-btn" id="ww-btn-empty-human-stats">📊 View Per-Bot W/L Records</button>
+      </div>
+      <p>Or select a match log from the <code>logs/</code> directory:</p>
       <div id="ww-empty-logs-list" class="ww-empty-logs-list"></div>
       <div class="ww-empty-hint">
         Generate more logs via: <code>python arena.py -p1 greedy -p2 wall_builder --log logs/demo.json</code>
@@ -174,8 +184,51 @@
           </div>
         </div>
 
+        <!-- Live Human vs Bot Bar -->
+        <div id="ww-live-bar" class="ww-live-bar" style="display:none;">
+          <div class="ww-live-top">
+            <div class="ww-live-status-wrap">
+              <span id="ww-live-status" class="ww-live-status">Your Turn</span>
+              <span id="ww-live-bot-record" class="ww-live-bot-record"></span>
+            </div>
+            <span id="ww-live-error" class="ww-live-error" style="display:none;"></span>
+          </div>
+
+          <div id="ww-live-active-controls" class="ww-live-actions-row">
+            <div class="ww-btn-group">
+              <button class="ww-btn ww-mode-btn ww-mode-active" id="ww-mode-move" data-mode="move" title="Click highlighted cell to move (Key: 1)">
+                🚶 Move
+              </button>
+              <button class="ww-btn ww-mode-btn" id="ww-mode-h" data-mode="H" title="Place Horizontal wall (Key: 2)">
+                ➖ H Wall
+              </button>
+              <button class="ww-btn ww-mode-btn" id="ww-mode-v" data-mode="V" title="Place Vertical wall (Key: 3)">
+                │ V Wall
+              </button>
+              <button class="ww-btn ww-btn-sm" id="ww-btn-flip-wall" title="Toggle H/V orientation (Key: R / Right-click)">
+                ↻ Flip H/V
+              </button>
+            </div>
+            <div class="ww-btn-group">
+              <button class="ww-btn ww-btn-danger-outline ww-btn-sm" id="ww-btn-resign" title="Resign current match (records bot win)">
+                🏳 Resign
+              </button>
+            </div>
+          </div>
+
+          <div id="ww-live-post-actions" class="ww-live-actions-row" style="display:none;">
+            <div id="ww-live-result-banner" class="ww-live-result-banner"></div>
+            <div class="ww-btn-group">
+              <button class="ww-btn ww-btn-primary ww-btn-sm" id="ww-btn-rematch">🔄 Rematch</button>
+              <button class="ww-btn ww-btn-sm" id="ww-btn-swap-rematch">🔁 Swap Sides</button>
+              <button class="ww-btn ww-btn-sm" id="ww-btn-live-stats">📊 All Bot Records</button>
+              <button class="ww-btn ww-btn-sm" id="ww-btn-exit-live">🎞 Replay Controls</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Replay Controls Card -->
-        <div class="ww-controls-card">
+        <div id="ww-controls-card" class="ww-controls-card">
           <div class="ww-scrubber-wrap">
             <div id="ww-scrubber-ticks" class="ww-scrubber-ticks"></div>
             <input type="range" id="ww-scrubber" class="ww-scrubber" min="0" max="0" value="0">
@@ -299,9 +352,9 @@
 
   <!-- Leaderboard Modal -->
   <div id="ww-leaderboard-modal" class="ww-modal">
-    <div class="ww-modal-card" style="max-width: 720px;">
+    <div class="ww-modal-card" style="max-width: 920px;">
       <div class="ww-modal-header">
-        <div class="ww-modal-title">🏆 Agent Leaderboard (TrueSkill μ - 3σ)</div>
+        <div class="ww-modal-title">🏆 Agent Leaderboard &amp; Bot vs Bot Records</div>
         <button class="ww-modal-close">&times;</button>
       </div>
       <div class="ww-modal-body">
@@ -322,6 +375,69 @@
     </div>
   </div>
 
+  <!-- Play vs Bot Modal -->
+  <div id="ww-play-bot-modal" class="ww-modal">
+    <div class="ww-modal-card" style="max-width: 580px;">
+      <div class="ww-modal-header">
+        <div class="ww-modal-title">⚔ Start Human vs Bot Match</div>
+        <button class="ww-modal-close">&times;</button>
+      </div>
+      <div class="ww-modal-body">
+        <div class="ww-form-group">
+          <label class="ww-form-label" for="ww-play-human-name">Your Name</label>
+          <input type="text" id="ww-play-human-name" class="ww-input" value="Human" maxlength="32">
+        </div>
+        <div class="ww-form-group">
+          <label class="ww-form-label">Your Side</label>
+          <div class="ww-side-picker">
+            <label class="ww-side-option">
+              <input type="radio" name="ww-human-side" value="0" checked>
+              <span><strong style="color:var(--p0-primary);">Player 0 (Red / Bottom)</strong> — Moves First</span>
+            </label>
+            <label class="ww-side-option">
+              <input type="radio" name="ww-human-side" value="1">
+              <span><strong style="color:var(--p1-primary);">Player 1 (Blue / Top)</strong> — Moves Second</span>
+            </label>
+          </div>
+        </div>
+        <div class="ww-form-group">
+          <label class="ww-form-label" for="ww-play-bot-select">Select Bot Opponent</label>
+          <select id="ww-play-bot-select" class="ww-select" style="width:100%; padding:10px;"></select>
+          <div id="ww-play-bot-preview" class="ww-bot-preview"></div>
+        </div>
+        <div id="ww-play-bot-error" class="ww-live-error" style="display:none; margin-bottom:10px;"></div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+          <button class="ww-btn" id="ww-btn-cancel-play">Cancel</button>
+          <button class="ww-btn ww-btn-primary" id="ww-btn-start-play">▶ Start Match</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Human vs Bot Stats Modal -->
+  <div id="ww-human-stats-modal" class="ww-modal">
+    <div class="ww-modal-card" style="max-width: 880px;">
+      <div class="ww-modal-header">
+        <div class="ww-modal-title">📊 Human vs Bot Match Records (Per Bot)</div>
+        <button class="ww-modal-close">&times;</button>
+      </div>
+      <div class="ww-modal-body">
+        <div id="ww-human-stats-summary" class="ww-human-stats-summary"></div>
+        <div id="ww-human-stats-table-wrap" style="overflow-x:auto;"></div>
+        <div class="ww-human-history-header">
+          <h4 style="margin:0;">Recent Human Matches</h4>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <select id="ww-human-history-filter" class="ww-select">
+              <option value="">All Bots</option>
+            </select>
+            <button class="ww-btn ww-btn-sm ww-btn-danger-outline" id="ww-btn-reset-human-stats">Reset Records</button>
+          </div>
+        </div>
+        <div id="ww-human-history-wrap" style="overflow-x:auto; max-height:240px;"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript Modules -->
   <script src="js/geometry.js"></script>
   <script src="js/rules.js"></script>
@@ -331,6 +447,7 @@
   <script src="js/panels.js"></script>
   <script src="js/loader.js"></script>
   <script src="js/export.js"></script>
+  <script src="js/human.js"></script>
   <script src="js/app.js"></script>
 
 </body>

@@ -206,9 +206,9 @@
         return;
       }
 
-      // Show summary when at the very end of replay
+      // Show summary when at the very end of replay (unless live-play handler manages it)
       const isEnd = this.controller.currentIndex === this.controller.frames.length - 1;
-      if (isEnd && match.winner !== undefined) {
+      if (isEnd && match.winner !== undefined && !match._suppressAutoSummary) {
         this._renderSummaryContent();
         this.elements.summaryModal.classList.add('ww-modal-open');
       } else {

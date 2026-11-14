@@ -5,7 +5,7 @@
   'use strict';
 
   window.WW = window.WW || {};
-  const { BoardRenderer, ReplayController, TimelineManager, PanelsManager, LogLoader, ExportManager } = window.WW;
+  const { BoardRenderer, ReplayController, TimelineManager, PanelsManager, LogLoader, ExportManager, HumanMatchClient } = window.WW;
 
   document.addEventListener('DOMContentLoaded', () => {
     // 1. Theme initialization
@@ -141,6 +141,19 @@
       if (el) el.addEventListener('change', applyViewOptions);
     });
 
+    // Human vs Bot Match Client
+    const humanClient = HumanMatchClient
+      ? new HumanMatchClient(controller, boardRenderer, {
+          onFlipChange: (flipped) => {
+            if (viewOptions.flipBoard) {
+              viewOptions.flipBoard.checked = !!flipped;
+              applyViewOptions();
+            }
+          },
+          onLoadReplayLog: (logPath) => loader.fetchAndLoadLog(logPath)
+        })
+      : null;
+
     // View Dropdown open/close
     const viewMenuBtn = document.getElementById('ww-btn-view-menu');
     const viewDropdown = document.getElementById('ww-view-dropdown');
@@ -162,11 +175,231 @@
       });
     });
 
-    // Leaderboard modal button & fetch
+    // Leaderboard modal button & fetch (with Bot-vs-Bot per-opponent W/D/L drill-down)
     const lbBtn = document.getElementById('ww-btn-leaderboard');
     const lbModal = document.getElementById('ww-leaderboard-modal');
     const lbWrap = document.getElementById('ww-leaderboard-table-wrap');
     const lbStatus = document.getElementById('ww-leaderboard-status');
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function openSeriesReplay(relPath) {
+      if (!relPath) return;
+      if (lbModal) lbModal.classList.remove('ww-modal-open');
+      loader.fetchAndLoadLog(relPath);
+    }
+
+    function renderResultPill(resLabel) {
+      if (resLabel === 'WIN') return '<span class="ww-outcome-pill ww-res-win">WIN</span>';
+      if (resLabel === 'LOSS') return '<span class="ww-outcome-pill ww-res-loss">LOSS</span>';
+      return '<span class="ww-outcome-pill ww-res-draw">DRAW</span>';
+    }
+
+    function formatSigned(val) {
+      const n = Number(val || 0);
+      return `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
+    }
+
+    function loadAgentDetail(agentName, filterOpponent = '') {
+      if (!lbWrap) return;
+      if (lbStatus) {
+        lbStatus.textContent = filterOpponent
+          ? `Loading ${agentName} vs ${filterOpponent} matches...`
+          : `Loading bot-vs-bot record for ${agentName}...`;
+      }
+      const query = filterOpponent
+        ? `?opponent=${encodeURIComponent(filterOpponent)}&limit=200`
+        : '?limit=200';
+      fetch(`/api/leaderboard/${encodeURIComponent(agentName)}${query}`)
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then(data => {
+          const ag = data.agent || {};
+          const h2h = data.head_to_head || [];
+          const matches = data.recent_matches || [];
+          const wins = Number(ag.wins || 0);
+          const draws = Number(ag.draws || 0);
+          const losses = Number(ag.losses || 0);
+          const nGames = Number(ag.n_games || (wins + draws + losses));
+          const mu = Number(ag.mu || 25);
+          const sigma = Number(ag.sigma || (25 / 3));
+          const ratingScore = ag.score != null ? Number(ag.score) : (mu - 3 * sigma);
+          const winRate = nGames > 0 ? (wins / nGames * 100).toFixed(1) : '0.0';
+          const avgTurns = nGames > 0 ? (Number(ag.total_turns || 0) / nGames).toFixed(1) : '0.0';
+
+          if (lbStatus) {
+            lbStatus.textContent = `${agentName}: ${wins}W / ${draws}D / ${losses}L across ${h2h.length} bot opponent${h2h.length === 1 ? '' : 's'}.`;
+          }
+
+          let html = `
+            <div class="ww-agent-detail-header">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <button class="ww-btn ww-btn-xs" id="ww-lb-back-btn">← All Bots</button>
+                <strong style="font-size:1.05rem;">🤖 ${escapeHtml(agentName)}</strong>
+              </div>
+              <span style="font-size:0.78rem; color:var(--text-muted);">Bot vs Bot Tournament &amp; Arena Matches</span>
+            </div>
+            <div class="ww-agent-stat-grid">
+              <div class="ww-stat-pill"><span>TrueSkill (μ-3σ)</span><strong style="color:var(--accent);">${ratingScore.toFixed(2)}</strong></div>
+              <div class="ww-stat-pill"><span>Skill μ / σ</span><strong>${mu.toFixed(1)} <small style="font-weight:400; color:var(--text-muted);">±${sigma.toFixed(2)}</small></strong></div>
+              <div class="ww-stat-pill"><span>Record (W/D/L)</span><strong>${wins} / ${draws} / ${losses}</strong></div>
+              <div class="ww-stat-pill"><span>Win Rate</span><strong>${winRate}%</strong></div>
+              <div class="ww-stat-pill"><span>Avg Turns</span><strong>${avgTurns}</strong></div>
+            </div>
+
+            <div class="ww-human-history-header" style="margin-top:8px;">
+              <strong>Head-to-Head vs Other Bots</strong>
+              <span style="font-size:0.74rem; color:var(--text-muted);">Click an opponent to filter matches</span>
+            </div>
+          `;
+
+          if (!h2h.length) {
+            html += '<div class="ww-logs-empty">No bot-vs-bot matches recorded yet for this agent.</div>';
+          } else {
+            html += `
+              <table class="ww-summary-table ww-leaderboard-table">
+                <thead>
+                  <tr>
+                    <th>Opponent Bot</th>
+                    <th style="text-align:center;">GP</th>
+                    <th style="text-align:center;">W / D / L</th>
+                    <th style="text-align:right;">Win %</th>
+                    <th style="text-align:center;">As P0</th>
+                    <th style="text-align:center;">As P1</th>
+                    <th style="text-align:right;">Avg Turns</th>
+                    <th style="text-align:right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+            `;
+            h2h.forEach(row => {
+              const isSelected = filterOpponent === row.opponent;
+              const replayBtn = row.log_rel_path
+                ? `<button class="ww-btn ww-btn-xs ww-lb-replay-btn" data-log="${escapeHtml(row.log_rel_path)}" title="Open series replay">📂 Replay</button>`
+                : '';
+              html += `
+                <tr${isSelected ? ' style="background:rgba(59,130,246,0.08);"' : ''}>
+                  <td>
+                    <button class="ww-lb-row-btn ww-lb-filter-btn" data-opp="${escapeHtml(row.opponent)}">${escapeHtml(row.opponent)}</button>
+                  </td>
+                  <td style="text-align:center;">${row.games}</td>
+                  <td style="text-align:center; font-weight:600;">
+                    <span style="color:#10b981;">${row.wins}</span> /
+                    <span style="color:var(--text-muted);">${row.draws}</span> /
+                    <span style="color:#ef4444;">${row.losses}</span>
+                  </td>
+                  <td style="text-align:right; font-weight:600;">${Number(row.win_rate || 0).toFixed(1)}%</td>
+                  <td style="text-align:center; color:var(--text-muted);">${row.p0_wins}-${row.p0_losses}</td>
+                  <td style="text-align:center; color:var(--text-muted);">${row.p1_wins}-${row.p1_losses}</td>
+                  <td style="text-align:right; color:var(--text-muted);">${Number(row.avg_turns || 0).toFixed(1)}</td>
+                  <td style="text-align:right; white-space:nowrap;">
+                    <button class="ww-btn ww-btn-xs ww-lb-filter-btn" data-opp="${escapeHtml(row.opponent)}">${isSelected ? 'Filtered' : 'Matches'}</button>
+                    ${replayBtn}
+                  </td>
+                </tr>
+              `;
+            });
+            html += '</tbody></table>';
+          }
+
+          html += `
+            <div class="ww-human-history-header">
+              <strong>Recorded Bot-vs-Bot Matches (${matches.length}${filterOpponent ? ` vs ${escapeHtml(filterOpponent)}` : ''})</strong>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <select id="ww-lb-opp-filter" class="ww-select" style="padding:3px 8px; font-size:0.76rem;">
+                  <option value="">All Opponents</option>
+                  ${h2h.map(r => `<option value="${escapeHtml(r.opponent)}"${filterOpponent === r.opponent ? ' selected' : ''}>vs ${escapeHtml(r.opponent)} (${r.wins}W-${r.losses}L)</option>`).join('')}
+                </select>
+                ${filterOpponent ? '<button class="ww-btn ww-btn-xs" id="ww-lb-clear-filter">Show All</button>' : ''}
+              </div>
+            </div>
+          `;
+
+          if (!matches.length) {
+            html += '<div class="ww-logs-empty">No individual matches recorded yet.</div>';
+          } else {
+            html += `
+              <div style="max-height:260px; overflow-y:auto; border:1px solid var(--border); border-radius:8px;">
+                <table class="ww-summary-table ww-leaderboard-table">
+                  <thead>
+                    <tr>
+                      <th>Result</th>
+                      <th>Side</th>
+                      <th>Opponent</th>
+                      <th style="text-align:right;">Turns</th>
+                      <th style="text-align:right;">Score Δ</th>
+                      <th>Date</th>
+                      <th style="text-align:right;">Replay</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+            `;
+            matches.forEach(m => {
+              const sideBadge = m.bot_side === 0
+                ? '<span style="color:var(--p0-primary); font-weight:700;">P0</span>'
+                : '<span style="color:var(--p1-primary); font-weight:700;">P1</span>';
+              const delta = Number(m.score_delta || 0);
+              const deltaColor = delta > 0 ? '#10b981' : (delta < 0 ? '#ef4444' : 'var(--text-muted)');
+              const ts = m.timestamp ? String(m.timestamp).replace('T', ' ').slice(0, 16) : '-';
+              const replayBtn = m.log_rel_path
+                ? `<button class="ww-btn ww-btn-xs ww-lb-replay-btn" data-log="${escapeHtml(m.log_rel_path)}">📂 Series</button>`
+                : '<span style="color:var(--text-subtle); font-size:0.72rem;">—</span>';
+              html += `
+                <tr>
+                  <td>${renderResultPill(m.result)}</td>
+                  <td>${sideBadge}</td>
+                  <td style="font-weight:600;">${escapeHtml(m.opponent)}</td>
+                  <td style="text-align:right;">${m.turns}</td>
+                  <td style="text-align:right; color:${deltaColor}; font-weight:600;">${formatSigned(delta)}</td>
+                  <td style="color:var(--text-muted); font-size:0.74rem;">${escapeHtml(ts)}</td>
+                  <td style="text-align:right;">${replayBtn}</td>
+                </tr>
+              `;
+            });
+            html += '</tbody></table></div>';
+          }
+
+          lbWrap.innerHTML = html;
+
+          const backBtn = document.getElementById('ww-lb-back-btn');
+          if (backBtn) backBtn.addEventListener('click', () => loadLeaderboard());
+
+          const clearBtn = document.getElementById('ww-lb-clear-filter');
+          if (clearBtn) clearBtn.addEventListener('click', () => loadAgentDetail(agentName, ''));
+
+          const oppSelect = document.getElementById('ww-lb-opp-filter');
+          if (oppSelect) {
+            oppSelect.addEventListener('change', () => {
+              loadAgentDetail(agentName, oppSelect.value);
+            });
+          }
+
+          lbWrap.querySelectorAll('.ww-lb-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const opp = btn.getAttribute('data-opp') || '';
+              loadAgentDetail(agentName, filterOpponent === opp ? '' : opp);
+            });
+          });
+
+          lbWrap.querySelectorAll('.ww-lb-replay-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              openSeriesReplay(btn.getAttribute('data-log'));
+            });
+          });
+        })
+        .catch(() => {
+          if (lbStatus) lbStatus.textContent = `Could not load bot-vs-bot history for ${agentName}.`;
+        });
+    }
 
     function loadLeaderboard() {
       if (!lbWrap) return;
@@ -182,7 +415,7 @@
             lbWrap.innerHTML = '<div class="ww-logs-empty">Play matches with arena.py or series.py to establish ratings.</div>';
             return;
           }
-          if (lbStatus) lbStatus.textContent = `${data.length} agents ranked. Leaderboard updates automatically after every match.`;
+          if (lbStatus) lbStatus.textContent = `${data.length} agents ranked. Click any bot to inspect its W/D/L records against every other bot.`;
           let html = `
             <table class="ww-summary-table ww-leaderboard-table">
               <thead>
@@ -195,6 +428,7 @@
                   <th style="text-align:center;">W / D / L</th>
                   <th style="text-align:right;">Win %</th>
                   <th style="text-align:right;">Avg Turns</th>
+                  <th style="text-align:right;">vs Bots</th>
                 </tr>
               </thead>
               <tbody>
@@ -204,20 +438,32 @@
             html += `
               <tr>
                 <td style="font-weight:700;">${rankBadge}</td>
-                <td style="font-weight:600;">${entry.name}</td>
+                <td>
+                  <button class="ww-lb-row-btn ww-lb-agent-btn" data-agent="${escapeHtml(entry.name)}">${escapeHtml(entry.name)}</button>
+                </td>
                 <td style="text-align:right; font-weight:700; color:var(--accent);">${entry.score.toFixed(2)}</td>
                 <td style="text-align:right; color:var(--text-muted);">${entry.mu.toFixed(2)}</td>
                 <td style="text-align:right; color:var(--text-subtle);">${entry.sigma.toFixed(2)}</td>
                 <td style="text-align:center;">${entry.wins} / ${entry.draws} / ${entry.losses}</td>
                 <td style="text-align:right;">${entry.win_rate.toFixed(1)}%</td>
                 <td style="text-align:right; color:var(--text-muted);">${entry.avg_turns.toFixed(1)}</td>
+                <td style="text-align:right;">
+                  <button class="ww-btn ww-btn-xs ww-lb-agent-btn" data-agent="${escapeHtml(entry.name)}">Details</button>
+                </td>
               </tr>
             `;
           });
           html += '</tbody></table>';
           lbWrap.innerHTML = html;
+
+          lbWrap.querySelectorAll('.ww-lb-agent-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const name = btn.getAttribute('data-agent');
+              if (name) loadAgentDetail(name);
+            });
+          });
         })
-        .catch(err => {
+        .catch(() => {
           if (lbStatus) lbStatus.textContent = 'API unavailable (offline or file:// mode).';
           lbWrap.innerHTML = '<div class="ww-logs-empty">Start server via <code>python serve.py</code> to view live rankings.</div>';
         });
@@ -249,6 +495,29 @@
     window.addEventListener('keydown', (e) => {
       // Ignore if typing in input
       if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+      if (humanClient && humanClient.isActiveUnfinished()) {
+        if (e.key === '1') {
+          e.preventDefault();
+          humanClient.setMode('move');
+          return;
+        }
+        if (e.key === '2') {
+          e.preventDefault();
+          humanClient.setMode('H');
+          return;
+        }
+        if (e.key === '3') {
+          e.preventDefault();
+          humanClient.setMode('V');
+          return;
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          humanClient.toggleWallOrientation();
+          return;
+        }
+      }
 
       switch (e.key) {
         case ' ':

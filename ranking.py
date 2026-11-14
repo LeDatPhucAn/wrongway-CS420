@@ -138,8 +138,24 @@ class RankingSystem:
                     log_path TEXT
                 );
 
+                CREATE TABLE IF NOT EXISTS human_matches (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    played_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    bot_name TEXT NOT NULL,
+                    human_name TEXT NOT NULL DEFAULT 'Human',
+                    human_side INTEGER NOT NULL,
+                    winner INTEGER,
+                    human_won INTEGER NOT NULL DEFAULT 0,
+                    bot_won INTEGER NOT NULL DEFAULT 0,
+                    is_draw INTEGER NOT NULL DEFAULT 0,
+                    turns INTEGER NOT NULL DEFAULT 0,
+                    reason TEXT,
+                    log_path TEXT
+                );
+
                 CREATE INDEX IF NOT EXISTS idx_agents_score ON agents(score DESC);
                 CREATE INDEX IF NOT EXISTS idx_matches_played_at ON matches(played_at DESC);
+                CREATE INDEX IF NOT EXISTS idx_human_matches_bot ON human_matches(bot_name, id DESC);
             """)
 
     def get_agent(self, name: str) -> Dict[str, Any]:
@@ -313,30 +329,297 @@ class RankingSystem:
             })
         return leaderboard
 
-    def get_agent_history(self, name: str, limit: int = 20) -> Dict[str, Any]:
-        """Fetch agent profile and recent matches."""
+    @staticmethod
+    def _to_rel_log_path(raw_path: Optional[str], logs_dir: Optional[Path] = None) -> Optional[str]:
+        if not raw_path:
+            return None
+        base_logs = Path(logs_dir or (ROOT / "logs")).resolve()
+        try:
+            rel = Path(raw_path).resolve().relative_to(base_logs)
+            return rel.as_posix()
+        except ValueError:
+            norm = str(raw_path).replace("\\", "/")
+            marker = "/logs/"
+            if marker in norm:
+                return norm.split(marker, 1)[1]
+            if norm.startswith("logs/"):
+                return norm[len("logs/"):]
+            return None
+
+    def get_agent_history(
+        self,
+        name: str,
+        limit: int = 200,
+        opponent: Optional[str] = None,
+        logs_dir: Optional[Path] = None,
+    ) -> Dict[str, Any]:
+        """Fetch agent profile, per-opponent W/D/L breakdown, and bot-vs-bot matches."""
         agent = self.get_agent(name)
         with self._connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT * FROM matches
+                SELECT
+                    CASE WHEN player0 = ? THEN player1 ELSE player0 END AS opponent,
+                    COUNT(*) AS games,
+                    SUM(CASE WHEN (player0 = ? AND winner = 0) OR (player1 = ? AND winner = 1) THEN 1 ELSE 0 END) AS wins,
+                    SUM(CASE WHEN winner IS NULL THEN 1 ELSE 0 END) AS draws,
+                    SUM(CASE WHEN (player0 = ? AND winner = 1) OR (player1 = ? AND winner = 0) THEN 1 ELSE 0 END) AS losses,
+                    SUM(CASE WHEN player0 = ? AND winner = 0 THEN 1 ELSE 0 END) AS p0_wins,
+                    SUM(CASE WHEN player0 = ? AND winner = 1 THEN 1 ELSE 0 END) AS p0_losses,
+                    SUM(CASE WHEN player1 = ? AND winner = 1 THEN 1 ELSE 0 END) AS p1_wins,
+                    SUM(CASE WHEN player1 = ? AND winner = 0 THEN 1 ELSE 0 END) AS p1_losses,
+                    COALESCE(SUM(turns), 0) AS total_turns,
+                    MAX(log_path) AS log_path
+                FROM matches
                 WHERE player0 = ? OR player1 = ?
-                ORDER BY id DESC
-                LIMIT ?
-            """, (name, name, limit))
-            matches = [dict(r) for r in cursor.fetchall()]
+                GROUP BY opponent
+                ORDER BY wins DESC, losses ASC, opponent ASC
+            """, (name, name, name, name, name, name, name, name, name, name, name))
+            h2h_rows = cursor.fetchall()
+
+            if opponent:
+                cursor.execute("""
+                    SELECT * FROM matches
+                    WHERE (player0 = ? AND player1 = ?) OR (player0 = ? AND player1 = ?)
+                    ORDER BY id DESC
+                    LIMIT ?
+                """, (name, opponent, opponent, name, int(limit)))
+            else:
+                cursor.execute("""
+                    SELECT * FROM matches
+                    WHERE player0 = ? OR player1 = ?
+                    ORDER BY id DESC
+                    LIMIT ?
+                """, (name, name, int(limit)))
+            raw_matches = [dict(r) for r in cursor.fetchall()]
+
+        head_to_head: List[Dict[str, Any]] = []
+        for r in h2h_rows:
+            games = int(r["games"])
+            wins = int(r["wins"] or 0)
+            draws = int(r["draws"] or 0)
+            losses = int(r["losses"] or 0)
+            total_turns = int(r["total_turns"] or 0)
+            head_to_head.append({
+                "opponent": r["opponent"],
+                "games": games,
+                "wins": wins,
+                "draws": draws,
+                "losses": losses,
+                "win_rate": round((wins / games * 100.0) if games > 0 else 0.0, 1),
+                "p0_wins": int(r["p0_wins"] or 0),
+                "p0_losses": int(r["p0_losses"] or 0),
+                "p1_wins": int(r["p1_wins"] or 0),
+                "p1_losses": int(r["p1_losses"] or 0),
+                "avg_turns": round((total_turns / games) if games > 0 else 0.0, 1),
+                "log_rel_path": self._to_rel_log_path(r["log_path"], logs_dir=logs_dir),
+            })
+
+        matches: List[Dict[str, Any]] = []
+        for m in raw_matches:
+            is_p0 = (m["player0"] == name)
+            opp_name = m["player1"] if is_p0 else m["player0"]
+            if m["winner"] is None:
+                res_label = "DRAW"
+            elif (is_p0 and m["winner"] == 0) or ((not is_p0) and m["winner"] == 1):
+                res_label = "WIN"
+            else:
+                res_label = "LOSS"
+
+            if is_p0:
+                s_before = score(m["p0_mu_before"], m["p0_sigma_before"]) if m["p0_mu_before"] is not None else 0.0
+                s_after = score(m["p0_mu_after"], m["p0_sigma_after"]) if m["p0_mu_after"] is not None else 0.0
+            else:
+                s_before = score(m["p1_mu_before"], m["p1_sigma_before"]) if m["p1_mu_before"] is not None else 0.0
+                s_after = score(m["p1_mu_after"], m["p1_sigma_after"]) if m["p1_mu_after"] is not None else 0.0
+
+            m["opponent"] = opp_name
+            m["bot_side"] = 0 if is_p0 else 1
+            m["result"] = res_label
+            m["score_delta"] = round(s_after - s_before, 2)
+            m["log_rel_path"] = self._to_rel_log_path(m.get("log_path"), logs_dir=logs_dir)
+            matches.append(m)
 
         return {
             "agent": agent,
-            "recent_matches": matches
+            "head_to_head": head_to_head,
+            "recent_matches": matches,
         }
 
-    def reset(self):
-        """Reset ratings database."""
+    def reset(self, include_human: bool = False):
+        """Reset bot-vs-bot ratings database (optionally also clearing human matches)."""
         with self._connection() as conn:
             conn.execute("DELETE FROM matches")
             conn.execute("DELETE FROM agents")
+            if include_human:
+                conn.execute("DELETE FROM human_matches")
             conn.commit()
+
+    def reset_human_matches(self):
+        """Clear all recorded Human vs Bot matches."""
+        with self._connection() as conn:
+            conn.execute("DELETE FROM human_matches")
+            conn.commit()
+
+    def record_human_match(
+        self,
+        bot_name: str,
+        human_side: int,
+        winner: Optional[int],
+        turns: int = 0,
+        reason: Optional[str] = None,
+        log_path: Optional[str] = None,
+        human_name: str = "Human",
+    ) -> Dict[str, Any]:
+        """Record a completed Human vs Bot match outcome without altering bot TrueSkill ratings."""
+        if human_side not in (0, 1):
+            raise ValueError("human_side must be 0 or 1")
+        if winner not in (None, 0, 1):
+            raise ValueError("winner must be 0, 1, or None")
+
+        clean_human = (human_name or "Human").strip() or "Human"
+        if winner is None:
+            human_won, bot_won, is_draw = 0, 0, 1
+            outcome_for_human = "draw"
+            outcome_for_bot = "draw"
+        elif winner == human_side:
+            human_won, bot_won, is_draw = 1, 0, 0
+            outcome_for_human = "win"
+            outcome_for_bot = "loss"
+        else:
+            human_won, bot_won, is_draw = 0, 1, 0
+            outcome_for_human = "loss"
+            outcome_for_bot = "win"
+
+        with self._connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO human_matches (
+                    bot_name, human_name, human_side, winner,
+                    human_won, bot_won, is_draw, turns, reason, log_path
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                bot_name, clean_human, human_side, winner,
+                human_won, bot_won, is_draw, int(turns), reason, log_path
+            ))
+            match_id = cursor.lastrowid
+            conn.commit()
+
+        return {
+            "id": match_id,
+            "bot_name": bot_name,
+            "human_name": clean_human,
+            "human_side": human_side,
+            "bot_side": 1 - human_side,
+            "winner": winner,
+            "outcome_for_human": outcome_for_human,
+            "outcome_for_bot": outcome_for_bot,
+            "turns": int(turns),
+            "reason": reason,
+            "log_path": log_path,
+        }
+
+    def get_human_bot_stats(self, bot_names: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+        """Return per-bot Human vs Bot win/loss/draw totals."""
+        with self._connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT
+                    bot_name,
+                    COUNT(*) AS games,
+                    COALESCE(SUM(bot_won), 0) AS bot_wins,
+                    COALESCE(SUM(human_won), 0) AS bot_losses,
+                    COALESCE(SUM(is_draw), 0) AS draws,
+                    COALESCE(SUM(CASE WHEN human_side = 1 AND bot_won = 1 THEN 1 ELSE 0 END), 0) AS p0_bot_wins,
+                    COALESCE(SUM(CASE WHEN human_side = 1 AND human_won = 1 THEN 1 ELSE 0 END), 0) AS p0_bot_losses,
+                    COALESCE(SUM(CASE WHEN human_side = 0 AND bot_won = 1 THEN 1 ELSE 0 END), 0) AS p1_bot_wins,
+                    COALESCE(SUM(CASE WHEN human_side = 0 AND human_won = 1 THEN 1 ELSE 0 END), 0) AS p1_bot_losses,
+                    COALESCE(SUM(turns), 0) AS total_turns,
+                    MAX(played_at) AS last_played_at
+                FROM human_matches
+                GROUP BY bot_name
+            """)
+            agg = {row["bot_name"]: dict(row) for row in cursor.fetchall()}
+
+        ordered_names = list(dict.fromkeys([*(bot_names or []), *sorted(agg.keys())]))
+        results: List[Dict[str, Any]] = []
+        for name in ordered_names:
+            row = agg.get(name)
+            if row:
+                games = int(row["games"])
+                bot_wins = int(row["bot_wins"])
+                bot_losses = int(row["bot_losses"])
+                draws = int(row["draws"])
+                total_turns = int(row["total_turns"])
+                results.append({
+                    "bot_name": name,
+                    "games": games,
+                    "bot_wins": bot_wins,
+                    "bot_losses": bot_losses,
+                    "draws": draws,
+                    "human_wins": bot_losses,
+                    "human_losses": bot_wins,
+                    "bot_win_rate": round((bot_wins / games * 100.0) if games > 0 else 0.0, 1),
+                    "human_win_rate": round((bot_losses / games * 100.0) if games > 0 else 0.0, 1),
+                    "p0_bot_wins": int(row["p0_bot_wins"]),
+                    "p0_bot_losses": int(row["p0_bot_losses"]),
+                    "p1_bot_wins": int(row["p1_bot_wins"]),
+                    "p1_bot_losses": int(row["p1_bot_losses"]),
+                    "avg_turns": round((total_turns / games) if games > 0 else 0.0, 1),
+                    "last_played_at": row["last_played_at"],
+                })
+            else:
+                results.append({
+                    "bot_name": name,
+                    "games": 0,
+                    "bot_wins": 0,
+                    "bot_losses": 0,
+                    "draws": 0,
+                    "human_wins": 0,
+                    "human_losses": 0,
+                    "bot_win_rate": 0.0,
+                    "human_win_rate": 0.0,
+                    "p0_bot_wins": 0,
+                    "p0_bot_losses": 0,
+                    "p1_bot_wins": 0,
+                    "p1_bot_losses": 0,
+                    "avg_turns": 0.0,
+                    "last_played_at": None,
+                })
+
+        results.sort(key=lambda r: (-r["games"], -r["bot_wins"], r["bot_name"]))
+        return results
+
+    def get_human_match_history(self, bot_name: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+        """Fetch recent Human vs Bot matches, optionally filtered by bot_name."""
+        with self._connection() as conn:
+            cursor = conn.cursor()
+            if bot_name:
+                cursor.execute("""
+                    SELECT * FROM human_matches
+                    WHERE bot_name = ?
+                    ORDER BY id DESC
+                    LIMIT ?
+                """, (bot_name, int(limit)))
+            else:
+                cursor.execute("""
+                    SELECT * FROM human_matches
+                    ORDER BY id DESC
+                    LIMIT ?
+                """, (int(limit),))
+            rows = [dict(r) for r in cursor.fetchall()]
+
+        for r in rows:
+            if r["is_draw"]:
+                r["outcome_for_human"] = "draw"
+                r["outcome_for_bot"] = "draw"
+            elif r["human_won"]:
+                r["outcome_for_human"] = "win"
+                r["outcome_for_bot"] = "loss"
+            else:
+                r["outcome_for_human"] = "loss"
+                r["outcome_for_bot"] = "win"
+        return rows
 
     def rebuild_from_logs(self, logs_dir: Path) -> int:
         """Optional tool: replay all match logs in logs_dir in chronological order."""
@@ -404,13 +687,36 @@ def print_leaderboard(db_path: Optional[Path] = None):
     print("=" * 80 + "\n")
 
 
+def print_human_stats(db_path: Optional[Path] = None, bot_names: Optional[List[str]] = None):
+    system = RankingSystem(db_path=db_path)
+    stats = system.get_human_bot_stats(bot_names=bot_names)
+
+    if not stats:
+        print("\nNo Human vs Bot matches recorded yet.")
+        return
+
+    print("\n" + "=" * 86)
+    print("HUMAN VS BOT RECORD (Per Bot)")
+    print("=" * 86)
+    print(f"{'Bot':20s}  {'GP':>3s}  {'Bot W':>5s}  {'Bot L':>5s}  {'Draws':>5s}  {'Bot Win%':>8s}  {'You Win%':>8s}  {'AvgT':>5s}")
+    print("-" * 86)
+    for r in stats:
+        print(
+            f"{r['bot_name']:20s}  {r['games']:3d}  {r['bot_wins']:5d}  {r['bot_losses']:5d}  "
+            f"{r['draws']:5d}  {r['bot_win_rate']:7.1f}%  {r['human_win_rate']:7.1f}%  {r['avg_turns']:5.1f}"
+        )
+    print("=" * 86 + "\n")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--leaderboard", "-l", action="store_true", default=True, help="Display leaderboard table")
+    parser.add_argument("--human", action="store_true", help="Display Human vs Bot win/loss table per bot")
     parser.add_argument("--agent", "-a", type=str, help="View detailed stats and match history for an agent")
     parser.add_argument("--rebuild", action="store_true", help="Rebuild leaderboard by replaying all logs in logs/ dir")
     parser.add_argument("--logs-dir", type=Path, default=ROOT / "logs", help="Logs directory for rebuild")
-    parser.add_argument("--reset", action="store_true", help="Reset all ratings in ranking.db")
+    parser.add_argument("--reset", action="store_true", help="Reset all bot-vs-bot ratings in ranking.db")
+    parser.add_argument("--reset-human", action="store_true", help="Reset all Human vs Bot match records")
     parser.add_argument("--db", type=Path, default=DEFAULT_DB_PATH, help="Path to SQLite ranking database")
     args = parser.parse_args(argv)
 
@@ -421,6 +727,15 @@ def main(argv=None):
         print(f"Reset ratings database at: {system.db_path}")
         return 0
 
+    if args.reset_human:
+        system.reset_human_matches()
+        print(f"Reset Human vs Bot match history at: {system.db_path}")
+        return 0
+
+    if args.human:
+        print_human_stats(db_path=args.db)
+        return 0
+
     if args.rebuild:
         print(f"Rebuilding ratings from logs in {args.logs_dir}...")
         n = system.rebuild_from_logs(args.logs_dir)
@@ -429,20 +744,37 @@ def main(argv=None):
         return 0
 
     if args.agent:
-        history = system.get_agent_history(args.agent)
+        history = system.get_agent_history(args.agent, logs_dir=args.logs_dir)
         agent = history["agent"]
         print(f"\n--- Agent: {agent['name']} ---")
         print(f"Score (μ - 3σ): {score(agent['mu'], agent['sigma']):.2f}")
         print(f"Skill (μ):      {agent['mu']:.2f}")
         print(f"Uncertainty (σ):{agent['sigma']:.2f}")
         print(f"Games:          {agent['n_games']} ({agent['wins']}W / {agent['draws']}D / {agent['losses']}L)")
+
+        h2h = history.get("head_to_head", [])
+        if h2h:
+            print("\nHead-to-Head vs Other Bots:")
+            print(f"  {'Opponent':22s}  {'GP':>3s}  {'W/D/L':>9s}  {'Win%':>6s}  {'P0(W-L)':>8s}  {'P1(W-L)':>8s}  {'AvgT':>5s}")
+            print("  " + "-" * 72)
+            for row in h2h:
+                wdl = f"{row['wins']}/{row['draws']}/{row['losses']}"
+                p0s = f"{row['p0_wins']}-{row['p0_losses']}"
+                p1s = f"{row['p1_wins']}-{row['p1_losses']}"
+                print(
+                    f"  {row['opponent']:22s}  {row['games']:3d}  {wdl:>9s}  {row['win_rate']:5.1f}%  "
+                    f"{p0s:>8s}  {p1s:>8s}  {row['avg_turns']:5.1f}"
+                )
+
         matches = history["recent_matches"]
         if matches:
-            print(f"\nRecent matches ({len(matches)}):")
+            print(f"\nRecorded Bot-vs-Bot Matches ({len(matches)}):")
             for m in matches:
-                vs = m['player1'] if m['player0'] == args.agent else m['player0']
-                res = "WIN" if m['winner_name'] == args.agent else ("DRAW" if m['winner'] is None else "LOSS")
-                print(f"  {m['played_at'][:19]} vs {vs:15s} | {res:4s} ({m['turns']} turns)")
+                side = "P0" if m["bot_side"] == 0 else "P1"
+                print(
+                    f"  {m['played_at'][:19]} | {side} vs {m['opponent']:20s} | "
+                    f"{m['result']:4s} ({m['turns']:3d} turns, Δ {m['score_delta']:+.2f})"
+                )
         print()
         return 0
 

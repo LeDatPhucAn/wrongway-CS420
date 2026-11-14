@@ -87,6 +87,79 @@ class TestRankingSystem(unittest.TestCase):
         hist = self.ranking.get_agent_history("agentA")
         self.assertEqual(len(hist["recent_matches"]), 3)
 
+    def test_human_match_recording_and_isolation(self):
+        # Record matches across sides against two bots
+        r1 = self.ranking.record_human_match("botA", human_side=0, winner=0, turns=22, reason="goal")
+        self.assertEqual(r1["outcome_for_human"], "win")
+        self.assertEqual(r1["outcome_for_bot"], "loss")
+
+        r2 = self.ranking.record_human_match("botA", human_side=1, winner=0, turns=30, reason="goal")
+        self.assertEqual(r2["outcome_for_human"], "loss")
+        self.assertEqual(r2["outcome_for_bot"], "win")
+
+        self.ranking.record_human_match("botB", human_side=0, winner=None, turns=500, reason="max_turns")
+
+        stats = {s["bot_name"]: s for s in self.ranking.get_human_bot_stats(["botA", "botB", "botC"])}
+        self.assertEqual(stats["botA"]["games"], 2)
+        self.assertEqual(stats["botA"]["bot_wins"], 1)
+        self.assertEqual(stats["botA"]["bot_losses"], 1)
+        self.assertEqual(stats["botA"]["human_wins"], 1)
+        self.assertEqual(stats["botA"]["human_losses"], 1)
+        self.assertEqual(stats["botA"]["p0_bot_wins"], 1)
+        self.assertEqual(stats["botA"]["p1_bot_losses"], 1)
+
+        self.assertEqual(stats["botB"]["draws"], 1)
+        self.assertEqual(stats["botC"]["games"], 0)
+
+        # Human matches must not pollute AI TrueSkill leaderboard
+        self.assertEqual(self.ranking.get_leaderboard(), [])
+
+        # Default tournament reset preserves human records
+        self.ranking.reset()
+        self.assertEqual(len(self.ranking.get_human_match_history()), 3)
+
+        # Explicit human reset clears them
+        self.ranking.reset_human_matches()
+        self.assertEqual(len(self.ranking.get_human_match_history()), 0)
+
+    def test_agent_head_to_head_and_match_records(self):
+        """Per-opponent bot-vs-bot W/D/L breakdown, side splits, and filtering."""
+        logs_root = Path(self.temp_dir.name) / "logs"
+        logs_root.mkdir(parents=True, exist_ok=True)
+        series_ab = str(logs_root / "tournament" / "series" / "BotA_vs_BotB.json")
+
+        # BotA vs BotB: 2 wins (as P0, as P1), 1 loss (as P1)
+        self.ranking.update_match("BotA", "BotB", winner=0, turns=30, log_path=series_ab)
+        self.ranking.update_match("BotB", "BotA", winner=1, turns=34, log_path=series_ab)
+        self.ranking.update_match("BotB", "BotA", winner=0, turns=40, log_path=series_ab)
+        # BotA vs BotC: 1 draw (as P0)
+        self.ranking.update_match("BotA", "BotC", winner=None, turns=150)
+
+        hist = self.ranking.get_agent_history("BotA", logs_dir=logs_root)
+        h2h = {row["opponent"]: row for row in hist["head_to_head"]}
+
+        self.assertEqual(set(h2h.keys()), {"BotB", "BotC"})
+        self.assertEqual(h2h["BotB"]["games"], 3)
+        self.assertEqual(h2h["BotB"]["wins"], 2)
+        self.assertEqual(h2h["BotB"]["losses"], 1)
+        self.assertEqual(h2h["BotB"]["draws"], 0)
+        self.assertEqual(h2h["BotB"]["p0_wins"], 1)
+        self.assertEqual(h2h["BotB"]["p1_wins"], 1)
+        self.assertEqual(h2h["BotB"]["p1_losses"], 1)
+        self.assertEqual(h2h["BotB"]["log_rel_path"], "tournament/series/BotA_vs_BotB.json")
+
+        self.assertEqual(h2h["BotC"]["games"], 1)
+        self.assertEqual(h2h["BotC"]["draws"], 1)
+        self.assertIsNone(h2h["BotC"]["log_rel_path"])
+
+        self.assertEqual(len(hist["recent_matches"]), 4)
+        self.assertEqual(hist["recent_matches"][0]["result"], "DRAW")
+        self.assertEqual(hist["recent_matches"][0]["opponent"], "BotC")
+
+        filtered = self.ranking.get_agent_history("BotA", opponent="BotB", logs_dir=logs_root)
+        self.assertEqual(len(filtered["recent_matches"]), 3)
+        self.assertTrue(all(m["opponent"] == "BotB" for m in filtered["recent_matches"]))
+
 
 if __name__ == "__main__":
     unittest.main()

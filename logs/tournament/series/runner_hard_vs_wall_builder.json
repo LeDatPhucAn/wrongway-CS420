@@ -43,7 +43,7 @@
         "timeout": 1.0,
         "startup_timeout": 5.0,
         "max_turns": 500,
-        "seed": 105,
+        "seed": 95,
         "starting_player": 0
       },
       "initial_state": {
@@ -91,7 +91,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.156,
+          "elapsed": 0.125,
           "state": {
             "board_size": 9,
             "positions": [
@@ -183,7 +183,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.109,
+          "elapsed": 0.141,
           "state": {
             "board_size": 9,
             "positions": [
@@ -228,7 +228,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -279,7 +279,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.141,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -384,7 +384,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.141,
           "state": {
             "board_size": 9,
             "positions": [
@@ -438,7 +438,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -497,7 +497,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.14,
+          "elapsed": 0.172,
           "state": {
             "board_size": 9,
             "positions": [
@@ -618,7 +618,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.141,
+          "elapsed": 0.187,
           "state": {
             "board_size": 9,
             "positions": [
@@ -806,7 +806,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -874,7 +874,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.172,
           "state": {
             "board_size": 9,
             "positions": [
@@ -941,7 +941,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1013,7 +1013,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.187,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1157,7 +1157,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.157,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1445,7 +1445,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.047,
+          "elapsed": 0.062,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1589,7 +1589,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1661,7 +1661,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1732,7 +1732,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1883,7 +1883,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -1963,7 +1963,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2123,7 +2123,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2286,7 +2286,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2370,7 +2370,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.063,
+          "elapsed": 0.062,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2454,7 +2454,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2538,7 +2538,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.047,
+          "elapsed": 0.062,
           "state": {
             "board_size": 9,
             "positions": [
@@ -2622,7 +2622,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3054,7 +3054,7 @@
         "timeout": 1.0,
         "startup_timeout": 5.0,
         "max_turns": 500,
-        "seed": 106,
+        "seed": 96,
         "starting_player": 0
       },
       "initial_state": {
@@ -3102,7 +3102,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3148,7 +3148,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.172,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3349,7 +3349,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.156,
+          "elapsed": 0.14,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3462,7 +3462,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.11,
+          "elapsed": 0.125,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3521,7 +3521,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3580,7 +3580,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.125,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3698,7 +3698,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.109,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3757,7 +3757,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3816,7 +3816,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -3934,7 +3934,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.078,
+          "elapsed": 0.094,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4051,7 +4051,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.047,
+          "elapsed": 0.062,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4113,7 +4113,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4179,7 +4179,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.11,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4322,7 +4322,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4397,7 +4397,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4556,7 +4556,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4723,7 +4723,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4898,7 +4898,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -4990,7 +4990,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.047,
           "state": {
             "board_size": 9,
             "positions": [
@@ -5176,7 +5176,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.047,
           "state": {
             "board_size": 9,
             "positions": [
@@ -5379,7 +5379,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -5587,7 +5587,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -5795,7 +5795,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -6003,7 +6003,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -6419,7 +6419,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -6523,7 +6523,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -6731,7 +6731,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -6835,7 +6835,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -7043,7 +7043,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.031,
           "state": {
             "board_size": 9,
             "positions": [
@@ -7459,7 +7459,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.031,
           "state": {
             "board_size": 9,
             "positions": [
@@ -7563,7 +7563,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -7875,7 +7875,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -8095,7 +8095,7 @@
         "timeout": 1.0,
         "startup_timeout": 5.0,
         "max_turns": 500,
-        "seed": 107,
+        "seed": 97,
         "starting_player": 0
       },
       "initial_state": {
@@ -8143,7 +8143,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.14,
+          "elapsed": 0.141,
           "state": {
             "board_size": 9,
             "positions": [
@@ -8235,7 +8235,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.14,
           "state": {
             "board_size": 9,
             "positions": [
@@ -8280,7 +8280,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -8331,7 +8331,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -8381,7 +8381,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -8436,7 +8436,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.141,
           "state": {
             "board_size": 9,
             "positions": [
@@ -8670,7 +8670,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.172,
           "state": {
             "board_size": 9,
             "positions": [
@@ -8796,7 +8796,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.109,
+          "elapsed": 0.14,
           "state": {
             "board_size": 9,
             "positions": [
@@ -8858,7 +8858,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -8993,7 +8993,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -9137,7 +9137,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -9497,7 +9497,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.062,
           "state": {
             "board_size": 9,
             "positions": [
@@ -9641,7 +9641,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.047,
+          "elapsed": 0.031,
           "state": {
             "board_size": 9,
             "positions": [
@@ -9935,7 +9935,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -10095,7 +10095,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -10338,7 +10338,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -10422,7 +10422,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.047,
           "state": {
             "board_size": 9,
             "positions": [
@@ -10506,7 +10506,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -10590,7 +10590,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.046,
           "state": {
             "board_size": 9,
             "positions": [
@@ -10842,7 +10842,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11106,7 +11106,7 @@
         "timeout": 1.0,
         "startup_timeout": 5.0,
         "max_turns": 500,
-        "seed": 108,
+        "seed": 98,
         "starting_player": 0
       },
       "initial_state": {
@@ -11154,7 +11154,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.031,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11200,7 +11200,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.172,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11245,7 +11245,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11296,7 +11296,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.172,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11346,7 +11346,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11401,7 +11401,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.14,
+          "elapsed": 0.141,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11455,7 +11455,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.031,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11632,7 +11632,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.125,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11750,7 +11750,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.141,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11868,7 +11868,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -11986,7 +11986,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.11,
+          "elapsed": 0.094,
           "state": {
             "board_size": 9,
             "positions": [
@@ -12103,7 +12103,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.063,
+          "elapsed": 0.094,
           "state": {
             "board_size": 9,
             "positions": [
@@ -12231,7 +12231,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.125,
           "state": {
             "board_size": 9,
             "positions": [
@@ -12303,7 +12303,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -12446,7 +12446,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -12522,7 +12522,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.109,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -12597,7 +12597,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -12676,7 +12676,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.171,
+          "elapsed": 0.187,
           "state": {
             "board_size": 9,
             "positions": [
@@ -12759,7 +12759,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -12847,7 +12847,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.093,
+          "elapsed": 0.11,
           "state": {
             "board_size": 9,
             "positions": [
@@ -12934,7 +12934,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -13026,7 +13026,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -13117,7 +13117,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.031,
           "state": {
             "board_size": 9,
             "positions": [
@@ -13213,7 +13213,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.063,
+          "elapsed": 0.125,
           "state": {
             "board_size": 9,
             "positions": [
@@ -13308,7 +13308,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -13408,7 +13408,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.063,
+          "elapsed": 0.094,
           "state": {
             "board_size": 9,
             "positions": [
@@ -13608,7 +13608,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.046,
+          "elapsed": 0.063,
           "state": {
             "board_size": 9,
             "positions": [
@@ -13807,7 +13807,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.047,
           "state": {
             "board_size": 9,
             "positions": [
@@ -14014,7 +14014,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.032,
+          "elapsed": 0.031,
           "state": {
             "board_size": 9,
             "positions": [
@@ -14230,7 +14230,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -14446,7 +14446,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -14662,7 +14662,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -14878,7 +14878,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -15094,7 +15094,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -15202,7 +15202,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -15742,7 +15742,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.032,
           "state": {
             "board_size": 9,
             "positions": [
@@ -15958,7 +15958,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.047,
           "state": {
             "board_size": 9,
             "positions": [
@@ -16174,7 +16174,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.032,
+          "elapsed": 0.046,
           "state": {
             "board_size": 9,
             "positions": [
@@ -16390,7 +16390,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.047,
+          "elapsed": 0.063,
           "state": {
             "board_size": 9,
             "positions": [
@@ -16498,7 +16498,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -16606,7 +16606,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.046,
+          "elapsed": 0.078,
           "state": {
             "board_size": 9,
             "positions": [
@@ -16822,7 +16822,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.047,
+          "elapsed": 0.078,
           "state": {
             "board_size": 9,
             "positions": [
@@ -17038,7 +17038,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.047,
+          "elapsed": 0.078,
           "state": {
             "board_size": 9,
             "positions": [
@@ -17254,7 +17254,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.078,
+          "elapsed": 0.063,
           "state": {
             "board_size": 9,
             "positions": [
@@ -17686,7 +17686,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -17914,7 +17914,7 @@
         "timeout": 1.0,
         "startup_timeout": 5.0,
         "max_turns": 500,
-        "seed": 109,
+        "seed": 99,
         "starting_player": 0
       },
       "initial_state": {
@@ -17962,7 +17962,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18054,7 +18054,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.141,
+          "elapsed": 0.172,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18099,7 +18099,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.031,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18150,7 +18150,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.172,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18200,7 +18200,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18255,7 +18255,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18309,7 +18309,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.032,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18368,7 +18368,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.187,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18426,7 +18426,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18489,7 +18489,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.141,
+          "elapsed": 0.219,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18615,7 +18615,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.125,
+          "elapsed": 0.156,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18677,7 +18677,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18745,7 +18745,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.157,
+          "elapsed": 0.172,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18812,7 +18812,7 @@
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -18884,7 +18884,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.203,
+          "elapsed": 0.219,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19028,7 +19028,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.094,
+          "elapsed": 0.125,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19100,7 +19100,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19172,7 +19172,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.109,
+          "elapsed": 0.094,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19244,7 +19244,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19316,7 +19316,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.063,
+          "elapsed": 0.062,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19388,7 +19388,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19460,7 +19460,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.047,
+          "elapsed": 0.031,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19532,7 +19532,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19598,7 +19598,7 @@
             "type": "wall",
             "orientation": "H",
             "row": 7,
-            "col": 4
+            "col": 3
           },
           "status": "ok",
           "reason": "wall",
@@ -19644,7 +19644,7 @@
                 ],
                 [
                   7,
-                  4
+                  3
                 ]
               ],
               "vertical": [
@@ -19673,7 +19673,7 @@
             "type": "move",
             "to": [
               7,
-              3
+              5
             ]
           },
           "status": "ok",
@@ -19689,7 +19689,7 @@
               ],
               [
                 7,
-                3
+                5
               ]
             ],
             "goal_rows": [
@@ -19720,7 +19720,7 @@
                 ],
                 [
                   7,
-                  4
+                  3
                 ]
               ],
               "vertical": [
@@ -19749,12 +19749,12 @@
             "type": "wall",
             "orientation": "H",
             "row": 7,
-            "col": 2
+            "col": 5
           },
           "status": "ok",
           "reason": "wall",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19764,7 +19764,7 @@
               ],
               [
                 7,
-                3
+                5
               ]
             ],
             "goal_rows": [
@@ -19795,11 +19795,11 @@
                 ],
                 [
                   7,
-                  2
+                  3
                 ],
                 [
                   7,
-                  4
+                  5
                 ]
               ],
               "vertical": [
@@ -19828,7 +19828,7 @@
             "type": "move",
             "to": [
               7,
-              2
+              6
             ]
           },
           "status": "ok",
@@ -19844,7 +19844,7 @@
               ],
               [
                 7,
-                2
+                6
               ]
             ],
             "goal_rows": [
@@ -19875,11 +19875,11 @@
                 ],
                 [
                   7,
-                  2
+                  3
                 ],
                 [
                   7,
-                  4
+                  5
                 ]
               ],
               "vertical": [
@@ -19914,7 +19914,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.047,
           "state": {
             "board_size": 9,
             "positions": [
@@ -19924,7 +19924,7 @@
               ],
               [
                 7,
-                2
+                6
               ]
             ],
             "goal_rows": [
@@ -19955,11 +19955,11 @@
                 ],
                 [
                   7,
-                  2
+                  3
                 ],
                 [
                   7,
-                  4
+                  5
                 ]
               ],
               "vertical": [
@@ -19988,13 +19988,13 @@
             "type": "move",
             "to": [
               7,
-              1
+              7
             ]
           },
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -20004,7 +20004,7 @@
               ],
               [
                 7,
-                1
+                7
               ]
             ],
             "goal_rows": [
@@ -20035,11 +20035,11 @@
                 ],
                 [
                   7,
-                  2
+                  3
                 ],
                 [
                   7,
-                  4
+                  5
                 ]
               ],
               "vertical": [
@@ -20068,7 +20068,7 @@
             "type": "wall",
             "orientation": "H",
             "row": 7,
-            "col": 0
+            "col": 7
           },
           "status": "ok",
           "reason": "wall",
@@ -20083,7 +20083,7 @@
               ],
               [
                 7,
-                1
+                7
               ]
             ],
             "goal_rows": [
@@ -20114,15 +20114,15 @@
                 ],
                 [
                   7,
-                  0
+                  3
                 ],
                 [
                   7,
-                  2
+                  5
                 ],
                 [
                   7,
-                  4
+                  7
                 ]
               ],
               "vertical": [
@@ -20151,13 +20151,13 @@
             "type": "move",
             "to": [
               7,
-              2
+              6
             ]
           },
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.016,
+          "elapsed": 0.015,
           "state": {
             "board_size": 9,
             "positions": [
@@ -20167,7 +20167,7 @@
               ],
               [
                 7,
-                2
+                6
               ]
             ],
             "goal_rows": [
@@ -20198,15 +20198,15 @@
                 ],
                 [
                   7,
-                  0
+                  3
                 ],
                 [
                   7,
-                  2
+                  5
                 ],
                 [
                   7,
-                  4
+                  7
                 ]
               ],
               "vertical": [
@@ -20241,7 +20241,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.047,
+          "elapsed": 0.079,
           "state": {
             "board_size": 9,
             "positions": [
@@ -20251,7 +20251,7 @@
               ],
               [
                 7,
-                2
+                6
               ]
             ],
             "goal_rows": [
@@ -20282,15 +20282,15 @@
                 ],
                 [
                   7,
-                  0
+                  3
                 ],
                 [
                   7,
-                  2
+                  5
                 ],
                 [
                   7,
-                  4
+                  7
                 ]
               ],
               "vertical": [
@@ -20319,13 +20319,13 @@
             "type": "move",
             "to": [
               7,
-              3
+              5
             ]
           },
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.015,
+          "elapsed": 0.0,
           "state": {
             "board_size": 9,
             "positions": [
@@ -20335,7 +20335,7 @@
               ],
               [
                 7,
-                3
+                5
               ]
             ],
             "goal_rows": [
@@ -20366,15 +20366,15 @@
                 ],
                 [
                   7,
-                  0
+                  3
                 ],
                 [
                   7,
-                  2
+                  5
                 ],
                 [
                   7,
-                  4
+                  7
                 ]
               ],
               "vertical": [
@@ -20419,7 +20419,7 @@
               ],
               [
                 7,
-                3
+                5
               ]
             ],
             "goal_rows": [
@@ -20450,15 +20450,15 @@
                 ],
                 [
                   7,
-                  0
+                  3
                 ],
                 [
                   7,
-                  2
+                  5
                 ],
                 [
                   7,
-                  4
+                  7
                 ]
               ],
               "vertical": [
@@ -20534,15 +20534,15 @@
                 ],
                 [
                   7,
-                  0
+                  3
                 ],
                 [
                   7,
-                  2
+                  5
                 ],
                 [
                   7,
-                  4
+                  7
                 ]
               ],
               "vertical": [
@@ -20618,15 +20618,15 @@
                 ],
                 [
                   7,
-                  0
+                  3
                 ],
                 [
                   7,
-                  2
+                  5
                 ],
                 [
                   7,
-                  4
+                  7
                 ]
               ],
               "vertical": [
@@ -20655,7 +20655,7 @@
             "type": "move",
             "to": [
               7,
-              5
+              3
             ]
           },
           "status": "ok",
@@ -20671,7 +20671,7 @@
               ],
               [
                 7,
-                5
+                3
               ]
             ],
             "goal_rows": [
@@ -20702,15 +20702,15 @@
                 ],
                 [
                   7,
-                  0
+                  3
                 ],
                 [
                   7,
-                  2
+                  5
                 ],
                 [
                   7,
-                  4
+                  7
                 ]
               ],
               "vertical": [
@@ -20745,7 +20745,7 @@
           "status": "ok",
           "reason": "move",
           "error": null,
-          "elapsed": 0.0,
+          "elapsed": 0.016,
           "state": {
             "board_size": 9,
             "positions": [
@@ -20755,7 +20755,7 @@
               ],
               [
                 7,
-                5
+                3
               ]
             ],
             "goal_rows": [
@@ -20786,15 +20786,15 @@
                 ],
                 [
                   7,
-                  0
+                  3
                 ],
                 [
                   7,
-                  2
+                  5
                 ],
                 [
                   7,
-                  4
+                  7
                 ]
               ],
               "vertical": [
@@ -20846,7 +20846,7 @@
           ],
           [
             7,
-            5
+            3
           ]
         ],
         "goal_rows": [
@@ -20877,15 +20877,15 @@
             ],
             [
               7,
-              0
+              3
             ],
             [
               7,
-              2
+              5
             ],
             [
               7,
-              4
+              7
             ]
           ],
           "vertical": [

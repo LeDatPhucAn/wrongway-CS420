@@ -38,8 +38,15 @@ class TestViewerBackend(unittest.TestCase):
         save_json(cls.sample_match_path, res)
 
         # Start a test ThreadingHTTPServer on an ephemeral port
+        cls.db_path = cls.temp_dir / "test_ranking.db"
+
         def handler_factory(*args, **kwargs):
-            return ReplayRequestHandler(*args, logs_dir=cls.logs_dir, **kwargs)
+            return ReplayRequestHandler(
+                *args,
+                logs_dir=cls.logs_dir,
+                db_path=cls.db_path,
+                **kwargs,
+            )
 
         cls.httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler_factory)
         cls.port = cls.httpd.server_address[1]
@@ -48,6 +55,9 @@ class TestViewerBackend(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        mgr = getattr(cls.httpd, "_human_session_manager", None)
+        if mgr is not None:
+            mgr.close_all()
         cls.httpd.shutdown()
         cls.httpd.server_close()
         shutil.rmtree(cls.temp_dir, ignore_errors=True)
@@ -55,6 +65,15 @@ class TestViewerBackend(unittest.TestCase):
     def _get(self, path):
         conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
         conn.request("GET", path)
+        res = conn.getresponse()
+        body = res.read()
+        conn.close()
+        return res.status, res.headers, body
+
+    def _post(self, path, payload):
+        conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
+        body_bytes = json.dumps(payload).encode("utf-8")
+        conn.request("POST", path, body=body_bytes, headers={"Content-Type": "application/json"})
         res = conn.getresponse()
         body = res.read()
         conn.close()
@@ -183,6 +202,93 @@ class TestViewerBackend(unittest.TestCase):
         self.assertEqual(d0[8][4], 8)
         # P1 starts at [0, 4] with goal row 8 -> shortest open distance is 8
         self.assertEqual(d1[0][4], 8)
+
+    def test_human_vs_bot_lifecycle_and_stats(self):
+        # 1. List available bots
+        status, _, body = self._get("/api/human/bots")
+        self.assertEqual(status, 200)
+        bots = json.loads(body.decode("utf-8"))
+        bot_names = {b["name"] for b in bots}
+        self.assertIn("greedy", bot_names)
+        self.assertIn("optimized_bot", bot_names)
+
+        # 2. Start match as P0 vs greedy
+        status, _, body = self._post("/api/human/start", {"bot": "greedy", "human_side": 0, "human_name": "Tester"})
+        self.assertEqual(status, 200)
+        match = json.loads(body.decode("utf-8"))
+        sid = match["session_id"]
+        self.assertFalse(match["done"])
+        self.assertEqual(match["state"]["current_player"], 0)
+        self.assertIn([7, 4], match["legal_moves"])
+
+        # 3. Invalid move should return 400 without forfeiting turn
+        status, _, _ = self._post(f"/api/human/match/{sid}/move", {"type": "move", "to": [0, 0]})
+        self.assertEqual(status, 400)
+        status, _, body = self._get(f"/api/human/match/{sid}")
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(body.decode("utf-8"))["state"]["turn"], 0)
+
+        # 4. Valid move advances turn and triggers bot reply
+        status, _, body = self._post(f"/api/human/match/{sid}/move", {"type": "move", "to": [7, 4]})
+        self.assertEqual(status, 200)
+        after_move = json.loads(body.decode("utf-8"))
+        self.assertEqual(after_move["state"]["turn"], 2)
+        self.assertEqual(len(after_move["turns"]), 2)
+
+        # 5. Resign records bot win & saves replay log
+        status, _, body = self._post(f"/api/human/match/{sid}/resign", {})
+        self.assertEqual(status, 200)
+        final_data = json.loads(body.decode("utf-8"))
+        self.assertTrue(final_data["done"])
+        self.assertEqual(final_data["winner"], 1)
+        self.assertEqual(final_data["reason"], "resign")
+        self.assertTrue((self.logs_dir / final_data["log_file"]).is_file())
+
+        # 6. Check per-bot Human stats
+        status, _, body = self._get("/api/human/stats")
+        self.assertEqual(status, 200)
+        stats_payload = json.loads(body.decode("utf-8"))
+        per_bot = {b["bot_name"]: b for b in stats_payload["bots"]}
+        self.assertEqual(per_bot["greedy"]["games"], 1)
+        self.assertEqual(per_bot["greedy"]["bot_wins"], 1)
+        self.assertEqual(per_bot["greedy"]["bot_losses"], 0)
+        self.assertEqual(len(stats_payload["recent_matches"]), 1)
+
+        # 7. Starting as P1 triggers bot's Turn 0 automatically
+        status, _, body = self._post("/api/human/start", {"bot": "random_agent", "human_side": 1})
+        self.assertEqual(status, 200)
+        p1_match = json.loads(body.decode("utf-8"))
+        self.assertEqual(p1_match["state"]["turn"], 1)
+        self.assertEqual(p1_match["state"]["current_player"], 1)
+        self._post(f"/api/human/match/{p1_match['session_id']}/resign", {})
+
+    def test_api_leaderboard_agent_h2h_and_matches(self):
+        from ranking import RankingSystem
+
+        ranking = RankingSystem(db_path=self.db_path)
+        series_path = str(self.logs_dir / "tournament" / "series" / "Alpha_vs_Beta.json")
+        ranking.update_match("Alpha", "Beta", winner=0, turns=28, log_path=series_path)
+        ranking.update_match("Beta", "Alpha", winner=0, turns=36, log_path=series_path)
+        ranking.update_match("Alpha", "Gamma", winner=0, turns=22)
+
+        status, _, body = self._get("/api/leaderboard/Alpha")
+        self.assertEqual(status, 200)
+        data = json.loads(body.decode("utf-8"))
+        h2h = {row["opponent"]: row for row in data["head_to_head"]}
+        self.assertEqual(h2h["Beta"]["wins"], 1)
+        self.assertEqual(h2h["Beta"]["losses"], 1)
+        self.assertEqual(h2h["Beta"]["log_rel_path"], "tournament/series/Alpha_vs_Beta.json")
+        self.assertEqual(h2h["Gamma"]["wins"], 1)
+        self.assertEqual(len(data["recent_matches"]), 3)
+
+        status, _, body = self._get("/api/leaderboard/Alpha?opponent=Beta&limit=10")
+        self.assertEqual(status, 200)
+        filtered = json.loads(body.decode("utf-8"))
+        self.assertEqual(len(filtered["recent_matches"]), 2)
+        self.assertEqual(
+            sorted(m["result"] for m in filtered["recent_matches"]),
+            ["LOSS", "WIN"],
+        )
 
 
 if __name__ == "__main__":

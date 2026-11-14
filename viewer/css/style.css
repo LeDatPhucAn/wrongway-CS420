@@ -1111,3 +1111,251 @@ kbd {
   z-index: 200;
   pointer-events: none;
 }
+
+
+/* Human vs Bot Live Play & Per-Bot W/L Records */
+.ww-empty-cta-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 12px 0 18px;
+}
+
+.ww-live-bar {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ww-live-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ww-live-status-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ww-live-status {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.ww-live-your-turn {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+}
+
+.ww-live-thinking {
+  background: rgba(245, 158, 11, 0.14);
+  color: #f59e0b;
+}
+
+.ww-live-done {
+  background: rgba(59, 130, 246, 0.14);
+  color: var(--accent);
+}
+
+.ww-live-bot-record {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.ww-live-error {
+  font-size: 0.78rem;
+  color: #ef4444;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.ww-live-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ww-mode-btn.ww-mode-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.ww-btn-danger-outline {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+.ww-btn-danger-outline:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.ww-live-result-banner {
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+.ww-result-win { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.ww-result-loss { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.ww-result-draw { background: rgba(148, 163, 184, 0.2); color: var(--text); }
+
+/* SVG Interactive Targets */
+.ww-move-target { cursor: pointer; }
+.ww-move-target-hit {
+  fill: rgba(16, 185, 129, 0.08);
+  stroke: rgba(16, 185, 129, 0.5);
+  stroke-width: 1.5;
+  transition: fill 0.12s ease;
+}
+.ww-move-target:hover .ww-move-target-hit {
+  fill: rgba(16, 185, 129, 0.22);
+  stroke: #10b981;
+  stroke-width: 2;
+}
+.ww-move-target-ring {
+  fill: none;
+  stroke: #10b981;
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.ww-move-target-dot {
+  fill: #10b981;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.ww-wall-slot { cursor: pointer; }
+.ww-wall-ghost {
+  fill: rgba(245, 158, 11, 0.12);
+  stroke: rgba(245, 158, 11, 0.35);
+  stroke-width: 1;
+  transition: fill 0.1s ease, stroke 0.1s ease;
+}
+.ww-wall-slot:hover .ww-wall-ghost {
+  fill: rgba(245, 158, 11, 0.78);
+  stroke: #d97706;
+  stroke-width: 1.5;
+}
+
+/* Modals: Play Bot & Human Stats */
+.ww-form-group { margin-bottom: 14px; }
+.ww-form-label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+.ww-side-picker { display: flex; flex-direction: column; gap: 8px; }
+.ww-side-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.ww-bot-preview {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.ww-human-stats-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.ww-stat-pill {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ww-stat-pill span { font-size: 0.72rem; color: var(--text-muted); }
+.ww-stat-pill strong { font-size: 1.15rem; }
+
+.ww-human-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0 8px;
+  gap: 8px;
+}
+
+.ww-outcome-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+.ww-outcome-win { background: rgba(59, 130, 246, 0.14); color: var(--p1-primary); }
+.ww-outcome-loss { background: rgba(239, 68, 68, 0.14); color: var(--p0-primary); }
+.ww-outcome-draw { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
+
+/* Leaderboard Bot-vs-Bot Drill-down */
+.ww-lb-row-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.ww-lb-row-btn:hover {
+  text-decoration: underline;
+}
+
+.ww-agent-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ww-agent-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.ww-res-win { background: rgba(16, 185, 129, 0.16); color: #10b981; }
+.ww-res-loss { background: rgba(239, 68, 68, 0.16); color: #ef4444; }
+.ww-res-draw { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
+
+.ww-btn-xs {
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  border-radius: 6px;
+}
